@@ -17,7 +17,7 @@ namespace To_Do_List_App
             }
         }
 
-        bool IsAvailable(Property property)
+        public bool IsAvailable(Property property)
         {
             if (property.Prerequisites == null) return true;
 

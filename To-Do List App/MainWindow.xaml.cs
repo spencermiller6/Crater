@@ -20,9 +20,31 @@ namespace To_Do_List_App
     /// </summary>
     public partial class MainWindow : Window
     {
+        public string directory = "C:\\Users\\spenc\\Documents\\My Files\\Repository\\Lists";
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+    }
+
+    public class Parser
+    {
+        private string _directory;
+
+        public Parser(string directory)
+        {
+            _directory = directory;
+        }
+
+        public void ParseDirectory()
+        {
+
+        }
+
+        public void ParseFile()
+        {
+
         }
     }
 }
