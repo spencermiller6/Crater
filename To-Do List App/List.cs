@@ -15,7 +15,7 @@ namespace To_Do_List_App
             {
                 new Property("Type", new List<string> { "Standard", "Template" }),
                 new Property("Completion Mode", new List<string> { "Immediate", "Long-Term", "Disabled" }),
-                new Property("Completed Items", new List<string> { "Hidden", "Visible", "Disabled" }),
+                new Property("Completed Items", new List<string> { "Hidden", "Visible", "Disabled" }, "Completion Mode"),
                 new Property("Children", new List<string> { "Enabled", "Disabled" }),
                 new Property("Notes", new List<string> { "Enabled", "Disabled" }),
                 new Property("Date", new List<string> { "Enabled", "Disabled" })

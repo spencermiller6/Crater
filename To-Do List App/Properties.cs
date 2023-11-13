@@ -19,14 +19,11 @@ namespace To_Do_List_App
 
         public bool IsAvailable(Property property)
         {
-            if (property.Prerequisites == null) return true;
+            if (property.Prerequisite == null) return true;
 
-            foreach ((Property prerequisiteProperty, List<String> prerequisiteValues) in property.Prerequisites)
+            if (Find(x => x.Name == property.Prerequisite).Value == "Disabled")
             {
-                if (!prerequisiteValues.Contains(Find(x => x.Name == prerequisiteProperty.Name).Value))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
@@ -37,7 +34,7 @@ namespace To_Do_List_App
     {
         public string Name { get; }
         public List<string> Values { get; }
-        public List<(Property, List<string>)>? Prerequisites { get; }
+        public string? Prerequisite { get; }
         public string Value {
             get
             {
@@ -54,7 +51,7 @@ namespace To_Do_List_App
             }
         }
 
-        public Property(string name, List<string> values, List<(Property, List<string>)>? prerequisites = null)
+        public Property(string name, List<string> values, string? prerequisite = null)
         {
             if (!values.Any())
             {
@@ -63,7 +60,7 @@ namespace To_Do_List_App
 
             Name = name;
             Values = values;
-            Prerequisites = prerequisites;
+            Prerequisite = prerequisite;
             Value = Values[0];
         }
 
