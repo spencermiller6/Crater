@@ -4,6 +4,7 @@ using Markdig.Syntax.Inlines;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Documents;
 
@@ -26,67 +27,44 @@ namespace To_Do_List_App
 
         public void ParseFromMarkdown(MarkdownDocument markdownDocument)
         {
-            foreach (var block in markdownDocument)
+            ParseContainerBlock(markdownDocument);
+        }
+
+        public void ParseContainerBlock(ContainerBlock parentBlock)
+        {
+            foreach (Markdig.Syntax.Block block in parentBlock)
             {
-                ParseBlockElements(block);
+                if (block == null)
+                {
+                    return;
+                }
+                if (block is ContainerBlock containerBlock)
+                {
+                    ParseContainerBlock(containerBlock);
+                }
+                if (block is LeafBlock leafBlock)
+                {
+                    ParseLeafBlock(leafBlock);
+                }
             }
         }
 
-        public void ParseBlockElements(Markdig.Syntax.Block block)
+        public void ParseLeafBlock(LeafBlock leafBlock)
         {
-            if (block is null)
+            if (leafBlock?.Inline is null)
             {
                 return;
             }
 
-            if (block is HeadingBlock headingBlock)
+            foreach (LiteralInline literalInline in leafBlock.Inline)
             {
-                switch (headingBlock.Level)
-                {
-                    case 1:
-                        {
-                            if (String.IsNullOrEmpty(Name))
-                            {
-                                Name = headingBlock.Inline.FirstChild.ToString();
-                            }
-
-                            break;
-                        }
-                    case 2:
-                        {
-                            Section section = new Section();
-                            section.Name = headingBlock.Inline.FirstChild.ToString();
-
-                            section.ParseElements();
-
-                            Sections.Add(section);
-
-                            break;
-                        }
-                }
+                ParseLiteralInline(literalInline);
             }
-            if (block is ListBlock listblock)
-            {
-                foreach (ListItemBlock listItemBlock in listblock)
-                {
-                    Item item = new Item();
+        }
 
-                    if (listItemBlock.LastChild is ParagraphBlock paragraphBlock)
-                    {
-                        if (paragraphBlock.Inline.FirstChild is TaskList taskList)
-                        {
-                            //item.Completed = paragraphBlock.Inline.FirstChild.IsChecked;
-                        }
-
-                        if (paragraphBlock.Inline.LastChild is LiteralInline literalInline)
-                        {
-                            item.Name = literalInline.ToString();
-                        }
-                    }
-
-                    //item.Name = listItemBlock.LastChild.Inline.
-                }
-            }
+        public void ParseLiteralInline(LiteralInline literalInline)
+        {
+            Debug.WriteLine(literalInline.Content.ToString());
         }
     }
 
