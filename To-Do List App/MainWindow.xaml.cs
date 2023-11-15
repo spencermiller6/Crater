@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Markdig;
+using Markdig.Parsers;
+using Markdig.Syntax;
 
 namespace To_Do_List_App
 {
@@ -20,31 +24,28 @@ namespace To_Do_List_App
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string directory = "C:\\Users\\spenc\\Documents\\My Files\\Repository\\Lists";
+        public string directory = "C:\\Users\\spenc\\Documents\\My Files\\Repository\\Lists\\Recipes.md";
 
         public MainWindow()
         {
             InitializeComponent();
+            ParseFile(directory);
         }
-    }
 
-    public class Parser
-    {
-        private string _directory;
-
-        public Parser(string directory)
+        public void ParseFile(string filepath)
         {
-            _directory = directory;
+            //List list = new List();
+
+            string text = File.ReadAllText(filepath, Encoding.UTF8);
+
+            var pipeline = new MarkdownPipelineBuilder().UseTaskLists().Build();
+            MarkdownDocument markdownDocument = MarkdownParser.Parse(text, pipeline);
+
+            List list = new List();
+
+            list.ParseFromMarkdown(markdownDocument);
         }
 
-        public void ParseDirectory()
-        {
 
-        }
-
-        public void ParseFile()
-        {
-
-        }
     }
 }
