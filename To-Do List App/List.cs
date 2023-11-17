@@ -1,4 +1,5 @@
 ﻿using Markdig.Extensions.TaskLists;
+using Markdig.Parsers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using System;
@@ -13,9 +14,10 @@ namespace To_Do_List_App
     public class List
     {
         public string Name;
-        //public List<Property> Properties;
+        public List<Property> Properties;
         public List<Section> Sections;
         //public List<Field> ItemFields;
+        public Section CurrentSection;
 
         public List()
         {
@@ -27,44 +29,59 @@ namespace To_Do_List_App
 
         public void ParseFromMarkdown(MarkdownDocument markdownDocument)
         {
-            ParseContainerBlock(markdownDocument);
-        }
-
-        public void ParseContainerBlock(ContainerBlock parentBlock)
-        {
-            foreach (Markdig.Syntax.Block block in parentBlock)
+            foreach (Markdig.Syntax.Block block in markdownDocument)
             {
                 if (block == null)
                 {
-                    return;
+                    throw new Exception("Block is null.");
                 }
-                if (block is ContainerBlock containerBlock)
+                else if (block is HeadingBlock headingBlock)
                 {
-                    ParseContainerBlock(containerBlock);
-                }
-                if (block is LeafBlock leafBlock)
-                {
-                    ParseLeafBlock(leafBlock);
+                    ParseHeadingBlock(headingBlock);
                 }
             }
         }
 
-        public void ParseLeafBlock(LeafBlock leafBlock)
+        public void ParseHeadingBlock(HeadingBlock headingBlock)
         {
-            if (leafBlock?.Inline is null)
+            int level = headingBlock.Level;
+
+            if (headingBlock.Inline?.FirstChild is not LiteralInline literalInline)
             {
-                return;
+                throw new Exception("Not LiteralInline.");
             }
 
-            foreach (LiteralInline literalInline in leafBlock.Inline)
-            {
-                ParseLiteralInline(literalInline);
-            }
-        }
+            string name = literalInline.Content.ToString();
 
-        public void ParseLiteralInline(LiteralInline literalInline)
-        {
-            Debug.WriteLine(literalInline.Content.ToString());
+            if(string.IsNullOrEmpty(name) )
+            {
+                throw new Exception("Section name cannot be empty");
+            }
+
+            switch (level)
+            {
+                case 1:
+                    if (!string.IsNullOrEmpty(Name))
+                    {
+                        throw new Exception("List name already set.");
+                    }
+
+                    Name = name;
+                    break;
+                case 2:
+                    Section? section = Sections.Find(x => x.Name == name);
+
+                    if (section is null)
+                    {
+                        section = new Section(name);
+                        Sections.Add(section);
+                    }
+
+                    CurrentSection = section;
+                    break;
+                default:
+                    throw new Exception("Only headers of level 1 and 2 are supported.");
+            }
         }
     }
 
@@ -73,9 +90,9 @@ namespace To_Do_List_App
         public string Name;
         public List<Item> Items;
 
-        public Section()
+        public Section(string name)
         {
-            Name = "";
+            Name = name;
             Items = new List<Item>();
         }
 

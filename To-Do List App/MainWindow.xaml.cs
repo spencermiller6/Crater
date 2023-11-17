@@ -24,7 +24,7 @@ namespace To_Do_List_App
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string directory = "C:\\Users\\spenc\\Documents\\My Files\\Repository\\Lists\\Recipes.md";
+        public string directory = "C:\\Users\\spenc\\Documents\\My Files\\Repository\\Lists\\Template.md";
 
         public MainWindow()
         {
