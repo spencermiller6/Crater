@@ -14,10 +14,11 @@ namespace To_Do_List_App
     public class List
     {
         public string Name;
-        public List<Property> Properties;
+        public List<Field> Properties; //TODO
         public List<Section> Sections;
         //public List<Field> ItemFields;
         public Section CurrentSection;
+        public Item CurrentItem;
 
         public List()
         {
@@ -38,6 +39,10 @@ namespace To_Do_List_App
                 else if (block is HeadingBlock headingBlock)
                 {
                     ParseHeadingBlock(headingBlock);
+                }
+                else if (block is ListBlock listBlock)
+                {
+                    ParseListBlock(listBlock);
                 }
             }
         }
@@ -63,7 +68,7 @@ namespace To_Do_List_App
                 case 1:
                     if (!string.IsNullOrEmpty(Name))
                     {
-                        throw new Exception("List name already set.");
+                        //throw new Exception("List name already set.");
                     }
 
                     Name = name;
@@ -81,6 +86,65 @@ namespace To_Do_List_App
                     break;
                 default:
                     throw new Exception("Only headers of level 1 and 2 are supported.");
+            }
+        }
+
+        public void ParseListBlock(Block listBlock)
+        {
+            foreach (ListItemBlock listItemBlock in listBlock)
+            {
+                if (listItemBlock.Count == 1)
+                {
+                    if(listItemBlock[0] is not ParagraphBlock paragraphBlock)
+                    {
+                        throw new Exception("Expected ParagraphBlock");
+                    }
+
+                    if (paragraphBlock.Inline?.FirstChild is TaskList taskList)
+                    {
+                        bool isChecked = taskList.Checked;
+
+                        if (taskList.NextSibling is LiteralInline literalInline)
+                        {
+                            string name = literalInline.Content.ToString();
+                            Item item = new Item(name, isChecked);
+
+                            if (CurrentItem is not null)
+                            {
+                                item.Parent = CurrentItem;
+                            }
+
+                            CurrentSection.Items.Add(item);
+                            CurrentItem = item;
+                        }
+                        else
+                        {
+                            throw new Exception("Found TaskList but not LiteralInline.");
+                        }
+                    }
+                    else if (paragraphBlock.Inline?.FirstChild is LiteralInline literalInline)
+                    {
+                        string nameAndValue = literalInline.Content.ToString();
+                        Field field = new Field(nameAndValue);
+
+                        if (CurrentItem is null)
+                        {
+                            Properties.Add(field);
+                        }
+                        else
+                        {
+                            CurrentItem.Fields.Add(field);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Value was not item or field.");
+                    }
+                }
+                else
+                {
+                    ParseListBlock(listItemBlock);
+                }
             }
         }
     }
@@ -105,13 +169,17 @@ namespace To_Do_List_App
     public class Item
     {
         public string Name;
-        public Dictionary<string, object> Fields;
+        public bool IsChecked;
+        //public Dictionary<string, object> Fields;
+        public List<Field> Fields;
         public List<Item> SubItems;
+        public Item? Parent;
 
-        public Item()
+        public Item(string name, bool isChecked)
         {
-            Name = "";
-            Fields = new Dictionary<string, object>();
+            Name = name;
+            IsChecked = isChecked;
+            Fields = new List<Field>();
             SubItems = new List<Item>();
         }
     }
@@ -137,6 +205,12 @@ namespace To_Do_List_App
             Unordered,
             Ordered
         }
+
+        public Field(string nameAndValue)
+        {
+            Name = nameAndValue; // Not actually correct, just for debug purposes
+        }
+
 
         public Field(string name, ValueTypeEnum valueType, ListTypeEnum listType, object? value)
         {
