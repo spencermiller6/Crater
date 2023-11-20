@@ -29,21 +29,12 @@ namespace To_Do_List_App
         public MainWindow()
         {
             InitializeComponent();
-            //ParseFile(directory);
+            ParseFile(directory);
         }
 
         public void ParseFile(string filepath)
         {
-            //List list = new List();
-
-            string text = File.ReadAllText(filepath, Encoding.UTF8);
-
-            var pipeline = new MarkdownPipelineBuilder().UseTaskLists().Build();
-            MarkdownDocument markdownDocument = MarkdownParser.Parse(text, pipeline);
-
-            List list = new List();
-
-            list.ParseFromMarkdown(markdownDocument);
+            ToDoList list = ToDoList.CreateFromFilepath(filepath);
         }
 
 
