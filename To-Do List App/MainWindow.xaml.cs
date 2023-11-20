@@ -29,7 +29,7 @@ namespace To_Do_List_App
         public MainWindow()
         {
             InitializeComponent();
-            ParseFile(directory);
+            //ParseFile(directory);
         }
 
         public void ParseFile(string filepath)
