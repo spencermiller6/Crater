@@ -67,56 +67,39 @@ namespace To_Do_List_App
 
         public void ParseLine(string line, ListSection? currentSection, ListItem? currentItem, int currentIndex)
         {
-            string trimmedLine = line.TrimStart();
-            LineIdentifier identifier = GetIdentifier(trimmedLine);
+            LineIdentifier identifier = GetIdentifier(line.TrimStart());
 
             if (identifier == LineIdentifier.None) return;
 
             List<string> substrings = SplitLine(line, identifier);
-
-
-
-
-
-
-            int ordinalPosition = GetOrdinalPosition(line, identifier);
-
-            string property;
-            string[] values;
-
-
-            string[] substrings = line.Split(':', ';');
-
-            property = substrings[0];
-            values = new string[substrings.Length - 1];
-
-            for (int i = 1; i < substrings.Length; i++)
-            {
-                values[i - 1] = substrings[i];
-            }
-
-            identifier = LineIdentifier.IncompleteItem;
-            string value = null;
-            int index = 0;
+            int ordinalPosition;
+            string propertyName;
+            string value;
 
             switch (identifier)
             {
-                case LineIdentifier.ListHeader:
-                    if (Name is null)
-                    {
-                        Name = value;
-                    }
-                    else if (value == "Active")
-                    {
+                case LineIdentifier.CompleteItem:
+                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    value = substrings[1];
 
-                    }
-                    else if (value == "Completed")
-                    {
+                    ParseItem(ordinalPosition, true, value);
+                    break;
+                case LineIdentifier.IncompleteItem:
+                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    value = substrings[1];
 
-                    }
+                    ParseItem(ordinalPosition, false, value);
+                    break;
+                case LineIdentifier.Property:
+                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    propertyName = substrings[1];
+                    value = substrings[2];
 
+                    ParseProperty(ordinalPosition, propertyName, value);
                     break;
                 case LineIdentifier.SectionHeader:
+                    value = substrings[0];
+
                     if (Sections.Any(section => section.Name == value))
                     {
                         currentSection = Sections.Find(section => section.Name == value);
@@ -129,50 +112,33 @@ namespace To_Do_List_App
                     }
 
                     break;
-                case LineIdentifier.IncompleteItem://TODO: combine this and the completeitem parsing logic, and move it to a method
-                    ListItem incompleteItem = new ListItem(value, false);
+                case LineIdentifier.ListHeader:
+                    value = substrings[0];
 
-                    while (index < currentIndex)
+                    switch (value)
                     {
-                        currentItem = currentItem.Parent;
-                        currentIndex--;
+                        case null:
+                            break;
+                        case "Active":
+                            break;
+                        case "Completed":
+                            break;
                     }
 
-                    // If the current item's index is 0, add the new item directly to the current section
-                    if (currentIndex == 0)
-                    {
-                        //TODO: need to make sure there is a current section, move this logic to a method
-                        currentSection.Items.Add(incompleteItem);
-                    }
-                    // Otherwise, add the new item as a child of the current one
-                    else
-                    {
-                        currentItem.Children.Add(incompleteItem);
-                    }
-
-                    currentItem = incompleteItem;
-
                     break;
-                case LineIdentifier.CompleteItem:
-                    ListItem completeItem = new ListItem(value, true);
-                    currentSection.Items.Add(completeItem);
-                    currentItem = completeItem;
-
-                    break;
-                case LineIdentifier.Property:
-                    break;
-                default:
-                    break;
-            }
-
-
-
-
-            if("" == "")
-            {
-                currentItem = currentItem?.Parent;
             }
         }
+
+        //        if (Sections.Any(section => section.Name == value))
+        //{
+        //    currentSection = Sections.Find(section => section.Name == value);
+        //}
+        //else
+        //{
+        //    ListSection section = new ListSection(value);
+        //    Sections.Add(section);
+        //    currentSection = section;
+        //}
 
         private LineIdentifier GetIdentifier(string line)
         {
@@ -182,6 +148,8 @@ namespace To_Do_List_App
                     switch (line.Substring(0, 6))
                     {
                         case "- [x] ":
+                            return LineIdentifier.CompleteItem;
+                        case "- [X] ":
                             return LineIdentifier.CompleteItem;
                         case "- [ ] ":
                             return LineIdentifier.IncompleteItem;
@@ -206,21 +174,21 @@ namespace To_Do_List_App
             switch (identifier)
             {
                 case LineIdentifier.CompleteItem:
-                    index = line.IndexOf("- [x] ");
+                    index = line.IndexOf('-');
 
                     substrings.Add(line.Substring(0, index));
                     substrings.Add(line.Substring(index + 6));
 
                     break;
                 case LineIdentifier.IncompleteItem:
-                    index = line.IndexOf("- [ ] ");
+                    index = line.IndexOf('-');
 
                     substrings.Add(line.Substring(0, index));
                     substrings.Add(line.Substring(index + 6));
 
                     break;
                 case LineIdentifier.Property:
-                    index = line.IndexOf("- ");
+                    index = line.IndexOf('-');
                     substrings.Add(line.Substring(0, index));
 
                     index = line.IndexOf(':');
@@ -228,12 +196,12 @@ namespace To_Do_List_App
 
                     break;
                 case LineIdentifier.SectionHeader:
-                    index = line.IndexOf("## ");
+                    index = line.IndexOf('#');
                     substrings.Add(line.Substring(index + 3));
 
                     break;
                 case LineIdentifier.ListHeader:
-                    index = line.IndexOf("# ");
+                    index = line.IndexOf('#');
                     substrings.Add(line.Substring(index + 2));
 
                     break;
@@ -253,6 +221,16 @@ namespace To_Do_List_App
             }
 
             return tabCount;
+        }
+
+        private void ParseItem(int ordinalPosition, bool isCompleted, string value)
+        {
+
+        }
+
+        private void ParseProperty(int ordinalPosition, string propertyName, string value)
+        {
+
         }
     }
 
