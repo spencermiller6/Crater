@@ -65,7 +65,7 @@ namespace To_Do_List_App
         private string _currentListSection;
         private ListSection? _currentSection;
         private ListItem? _currentItem;
-        private int _currentIndex;
+        private int _currentOrdinalPosition;
 
         public ListParser()
         {
@@ -73,7 +73,7 @@ namespace To_Do_List_App
             _currentListSection = "";
             _currentSection = null;
             _currentItem = null;
-            _currentIndex = 0;
+            _currentOrdinalPosition = 0;
         }
 
         public ToDoList CreateFromFilepath(string filepath)
