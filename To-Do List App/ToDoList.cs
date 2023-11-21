@@ -42,8 +42,8 @@ namespace To_Do_List_App
             string? line;
 
             ToDoList list = new ToDoList();
-            ListSection? currentSection;
-            ListItem? currentItem;
+            ListSection? currentSection = null;
+            ListItem? currentItem = null;
             int currentIndex = 0;
 
             try
@@ -53,7 +53,6 @@ namespace To_Do_List_App
                 while (line != null)
                 {
                     list.ParseLine(line, currentSection, currentItem, currentIndex);
-
                     line = reader.ReadLine();
                 }
             }
@@ -62,15 +61,19 @@ namespace To_Do_List_App
                 reader.Close();
             }
 
-
             return list;
         }
 
         public void ParseLine(string line, ListSection? currentSection, ListItem? currentItem, int currentIndex)
         {
-            LineIdentifier identifier;
+            LineIdentifier? identifier = GetIdentifier(line);
+            if (identifier == null) return;
+
+            
+
             string property;
             string[] values;
+
 
             string[] substrings = line.Split(':', ';');
 
@@ -158,6 +161,54 @@ namespace To_Do_List_App
             if("" == "")
             {
                 currentItem = currentItem?.Parent;
+            }
+        }
+
+        private LineIdentifier? GetIdentifier(string line)
+        {
+            switch (line.Substring(0, 2))
+            {
+                case "- ":
+                    switch (line.Substring(0, 6))
+                    {
+                        case "- [x] ":
+                            return LineIdentifier.CompleteItem;
+                        case "- [ ] ":
+                            return LineIdentifier.IncompleteItem;
+                        default:
+                            return LineIdentifier.Property;
+                    }
+                case "##":
+                    if (line[2] != ' ') goto default;
+                    return LineIdentifier.SectionHeader;
+                case "# ":
+                    return LineIdentifier.ListHeader;
+                default:
+                    return null;
+            }
+
+
+
+            if (line.Substring(0, 2) == "# ")
+            {
+                return LineIdentifier.ListHeader;
+            }
+
+            string[] splitters = new string[]
+            {
+                "## ",
+                "# ",
+                "- [ ] ",
+                "- [x] ",
+                "- "
+            };
+
+            int lowestIndex;
+            string identifier;
+
+            foreach (string splitter in splitters)
+            {
+                lowe
             }
         }
     }
