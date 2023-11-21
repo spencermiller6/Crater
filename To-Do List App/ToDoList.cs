@@ -1,25 +1,15 @@
-﻿using Markdig.Extensions.TaskLists;
-using Markdig.Parsers;
-using Markdig.Syntax;
-using Markdig.Syntax.Inlines;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Windows.Documents;
-using System.Windows.Shapes;
-using static System.Collections.Specialized.BitVector32;
+using static To_Do_List_App.ToDoList;
 
 namespace To_Do_List_App
 {
     public class ToDoList
     {
-        string? Name;
-        Dictionary<string, string> Properties;
-        List<ListSection> Sections;
+        public string? Name;
+        public Dictionary<string, string> Properties;
+        public List<ListSection> Sections;
 
         public ToDoList()
         {
@@ -36,16 +26,60 @@ namespace To_Do_List_App
             Property,
             None
         }
+    }
 
-        public static ToDoList CreateFromFilepath(string filepath)
+    public class ListSection
+    {
+        public string Name;
+        public List<ListItem> Items;
+
+        public ListSection(string name)
+        {
+            Name = name;
+            Items = new List<ListItem>();
+        }
+    }
+
+    public class ListItem
+    {
+        public string Name;
+        public bool IsComplete;
+        public Dictionary<string, string> BuiltInProperties;
+        public Dictionary<string, string> CustomProperties;
+        public ListItem? Parent;
+        public List<ListItem>? Children;
+
+        public ListItem(string name, bool isComplete)
+        {
+            Name = name;
+            IsComplete = isComplete;
+            BuiltInProperties = new Dictionary<string, string>();
+            CustomProperties = new Dictionary<string, string>();
+            Children = new List<ListItem> { };
+        }
+    }
+
+    public class ListParser
+    {
+        private ToDoList _list;
+        private string _currentListSection;
+        private ListSection? _currentSection;
+        private ListItem? _currentItem;
+        private int _currentIndex;
+
+        public ListParser()
+        {
+            _list = new ToDoList();
+            _currentListSection = "";
+            _currentSection = null;
+            _currentItem = null;
+            _currentIndex = 0;
+        }
+
+        public ToDoList CreateFromFilepath(string filepath)
         {
             StreamReader reader = new StreamReader(filepath);
             string? line;
-
-            ToDoList list = new ToDoList();
-            ListSection? currentSection = null;
-            ListItem? currentItem = null;
-            int currentIndex = 0;
 
             try
             {
@@ -53,7 +87,7 @@ namespace To_Do_List_App
 
                 while (line != null)
                 {
-                    list.ParseLine(line, currentSection, currentItem, currentIndex);
+                    ParseLine(line);
                     line = reader.ReadLine();
                 }
             }
@@ -62,10 +96,10 @@ namespace To_Do_List_App
                 reader.Close();
             }
 
-            return list;
+            return _list;
         }
 
-        public void ParseLine(string line, ListSection? currentSection, ListItem? currentItem, int currentIndex)
+        public void ParseLine(string line)
         {
             LineIdentifier identifier = GetIdentifier(line.TrimStart());
 
@@ -99,31 +133,12 @@ namespace To_Do_List_App
                     break;
                 case LineIdentifier.SectionHeader:
                     value = substrings[0];
-
-                    if (Sections.Any(section => section.Name == value))
-                    {
-                        currentSection = Sections.Find(section => section.Name == value);
-                    }
-                    else
-                    {
-                        ListSection section = new ListSection(value);
-                        Sections.Add(section);
-                        currentSection = section;
-                    }
+                    ParseSectionHeader(value);
 
                     break;
                 case LineIdentifier.ListHeader:
                     value = substrings[0];
-
-                    switch (value)
-                    {
-                        case null:
-                            break;
-                        case "Active":
-                            break;
-                        case "Completed":
-                            break;
-                    }
+                    ParseListHeader(value);
 
                     break;
             }
@@ -232,36 +247,32 @@ namespace To_Do_List_App
         {
 
         }
-    }
 
-    public class ListSection
-    {
-        public string Name;
-        public List<ListItem> Items;
-
-        public ListSection(string name)
+        private void ParseListHeader(string value)
         {
-            Name = name;
-            Items = new List<ListItem>();
+            switch (value)
+            {
+                case null:
+                    break;
+                case "Active":
+                    break;
+                case "Completed":
+                    break;
+            }
         }
-    }
 
-    public class ListItem
-    {
-        public string Name;
-        public bool IsComplete;
-        public Dictionary<string, string> BuiltInProperties;
-        public Dictionary<string, string> CustomProperties;
-        public ListItem? Parent;
-        public List<ListItem>? Children;
-
-        public ListItem(string name, bool isComplete)
+        private void ParseSectionHeader(string value)
         {
-            Name = name;
-            IsComplete = isComplete;
-            BuiltInProperties = new Dictionary<string, string>();
-            CustomProperties = new Dictionary<string, string>();
-            Children = new List<ListItem> { };
+            if (_list.Sections.Any(section => section.Name == value))
+            {
+                _currentSection = _list.Sections.Find(section => section.Name == value);
+            }
+            else
+            {
+                ListSection section = new ListSection(value);
+                _list.Sections.Add(section);
+                _currentSection = section;
+            }
         }
     }
 }
