@@ -172,7 +172,7 @@ namespace To_Do_List_App
                             return LineIdentifier.Property;
                     }
                 case "##":
-                    if (line[2] != ' ') goto default;
+                    if (line[2] != ' ') goto default; //TODO: might throw error
                     return LineIdentifier.SectionHeader;
                 case "# ":
                     return LineIdentifier.ListHeader;
@@ -250,14 +250,17 @@ namespace To_Do_List_App
 
         private void ParseListHeader(string value)
         {
-            switch (value)
+            if (_list.Name is null)
             {
-                case null:
-                    break;
-                case "Active":
-                    break;
-                case "Completed":
-                    break;
+                _list.Name = value;
+            }
+            else if (value == "Active")
+            {
+                _currentListSection = "Active";
+            }
+            else if (value == "Completed")
+            {
+                _currentListSection = "Completed";
             }
         }
 
