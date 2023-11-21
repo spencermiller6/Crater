@@ -160,13 +160,13 @@ namespace To_Do_List_App
             switch (line.Substring(0, 2))
             {
                 case "- ":
-                    switch (line.Substring(0, 6))
+                    switch (line.Substring(2, 4))
                     {
-                        case "- [x] ":
+                        case "[x] ":
                             return LineIdentifier.CompleteItem;
-                        case "- [X] ":
+                        case "[X] ":
                             return LineIdentifier.CompleteItem;
-                        case "- [ ] ":
+                        case "[ ] ":
                             return LineIdentifier.IncompleteItem;
                         default:
                             return LineIdentifier.Property;
