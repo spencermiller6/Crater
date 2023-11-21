@@ -33,7 +33,8 @@ namespace To_Do_List_App
             SectionHeader,
             IncompleteItem,
             CompleteItem,
-            Property
+            Property,
+            None
         }
 
         public static ToDoList CreateFromFilepath(string filepath)
@@ -66,10 +67,14 @@ namespace To_Do_List_App
 
         public void ParseLine(string line, ListSection? currentSection, ListItem? currentItem, int currentIndex)
         {
-            LineIdentifier? identifier = GetIdentifier(line);
-            if (identifier == null) return;
+            string trimmedLine = line.TrimStart();
+            LineIdentifier identifier = GetIdentifier(trimmedLine);
 
-            
+            if (identifier == LineIdentifier.None) return;
+
+            List<string> substrings = SplitLine(line, identifier);
+
+            int ordinalPosition = GetOrdinalPosition(line, identifier);
 
             string property;
             string[] values;
@@ -164,7 +169,7 @@ namespace To_Do_List_App
             }
         }
 
-        private LineIdentifier? GetIdentifier(string line)
+        private LineIdentifier GetIdentifier(string line)
         {
             switch (line.Substring(0, 2))
             {
@@ -184,32 +189,57 @@ namespace To_Do_List_App
                 case "# ":
                     return LineIdentifier.ListHeader;
                 default:
-                    return null;
+                    return LineIdentifier.None;
+            }
+        }
+
+        private List<string> SplitLine(string line, LineIdentifier identifier)
+        {
+            List<string> substrings = new List<string>();
+            int index;
+
+            switch (identifier)
+            {
+                case LineIdentifier.CompleteItem:
+                    index = line.IndexOf("- [x] ");
+
+                    substrings.Add(line.Substring(0, index));
+                    substrings.Add(line.Substring(index + 6));
+
+                    break;
+                case LineIdentifier.IncompleteItem:
+                    index = line.IndexOf("- [ ] ");
+
+                    substrings.Add(line.Substring(0, index));
+                    substrings.Add(line.Substring(index + 6));
+
+                    break;
+                case LineIdentifier.Property:
+                    index = line.IndexOf("- ");
+                    substrings.Add(line.Substring(0, index));
+
+                    index = line.IndexOf(':');
+                    substrings.Add(line.Substring(index));
+
+                    break;
+                case LineIdentifier.SectionHeader:
+                    index = line.IndexOf("## ");
+                    substrings.Add(line.Substring(index + 3));
+
+                    break;
+                case LineIdentifier.ListHeader:
+                    index = line.IndexOf("# ");
+                    substrings.Add(line.Substring(index + 2));
+
+                    break;
             }
 
+            return substrings;
+        }
 
-
-            if (line.Substring(0, 2) == "# ")
-            {
-                return LineIdentifier.ListHeader;
-            }
-
-            string[] splitters = new string[]
-            {
-                "## ",
-                "# ",
-                "- [ ] ",
-                "- [x] ",
-                "- "
-            };
-
-            int lowestIndex;
-            string identifier;
-
-            foreach (string splitter in splitters)
-            {
-                lowe
-            }
+        private int GetOrdinalPosition(string line)
+        {
+            
         }
     }
 
