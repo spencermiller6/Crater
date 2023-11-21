@@ -74,6 +74,11 @@ namespace To_Do_List_App
 
             List<string> substrings = SplitLine(line, identifier);
 
+
+
+
+
+
             int ordinalPosition = GetOrdinalPosition(line, identifier);
 
             string property;
@@ -239,7 +244,15 @@ namespace To_Do_List_App
 
         private int GetOrdinalPosition(string line)
         {
-            
+            string tabsOnly = line.Replace("    ", "\t");
+            int tabCount = 0;
+
+            foreach (char c in tabsOnly)
+            {
+                if (c == '\t') tabCount++;
+            }
+
+            return tabCount;
         }
     }
 
