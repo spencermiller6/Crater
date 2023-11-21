@@ -116,13 +116,13 @@ namespace To_Do_List_App
                     ordinalPosition = GetOrdinalPosition(substrings[0]);
                     value = substrings[1];
 
-                    ParseItem(ordinalPosition, true, value);
+                    ParseItem(value, true, ordinalPosition);
                     break;
                 case LineIdentifier.IncompleteItem:
                     ordinalPosition = GetOrdinalPosition(substrings[0]);
                     value = substrings[1];
 
-                    ParseItem(ordinalPosition, false, value);
+                    ParseItem(value, false, ordinalPosition);
                     break;
                 case LineIdentifier.Property:
                     ordinalPosition = GetOrdinalPosition(substrings[0]);
@@ -143,17 +143,6 @@ namespace To_Do_List_App
                     break;
             }
         }
-
-        //        if (Sections.Any(section => section.Name == value))
-        //{
-        //    currentSection = Sections.Find(section => section.Name == value);
-        //}
-        //else
-        //{
-        //    ListSection section = new ListSection(value);
-        //    Sections.Add(section);
-        //    currentSection = section;
-        //}
 
         private LineIdentifier GetIdentifier(string line)
         {
@@ -238,9 +227,30 @@ namespace To_Do_List_App
             return tabCount;
         }
 
-        private void ParseItem(int ordinalPosition, bool isCompleted, string value)
+        private void ParseItem(string value, bool isCompleted, int ordinalPosition)
         {
+            ListItem item = new ListItem(value, isCompleted);
 
+            while (ordinalPosition <= _currentOrdinalPosition)
+            {
+                _currentItem = _currentItem.Parent;
+                _currentOrdinalPosition--;
+            }
+
+            // If the current item's index is 0, add the new item directly to the current section
+            if (_currentOrdinalPosition == 0)
+            {
+                //TODO: need to make sure there is a current section, move this logic to a method
+                _currentSection.Items.Add(item);
+            }
+            // Otherwise, add the new item as a child of the current one
+            else
+            {
+                _currentItem.Children.Add(item);
+            }
+
+            _currentItem = item;
+            _currentOrdinalPosition = ordinalPosition;
         }
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
