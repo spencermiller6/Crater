@@ -312,7 +312,14 @@ namespace To_Do_List_App
             {
                 if (_isCurrentlySettingItemProperties && ordinalPosition == 1)
                 {
+                    if (_list.ItemProperties.ContainsKey(propertyName))
+                    {
+                        throw new Exception($"A property with the name {propertyName} is already defined.");
+                    }
+
                     GetTypeParameters(value, out ItemType itemType, out ItemCollection itemCollection);
+                    _list.ItemProperties.Add(propertyName, (itemType, itemCollection));
+                    // TODO: find a place to reset the _isCurrentlySettingItemProperties flag once done setting item properties
                 }
             }
 
