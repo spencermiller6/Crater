@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System;
 using static To_Do_List_App.ToDoList;
 
 namespace To_Do_List_App
@@ -31,9 +32,10 @@ namespace To_Do_List_App
 
         public enum ItemType
         {
-            Int,
             String,
-            Date
+            Int,
+            Date,
+            Bool
         }
 
         public enum ItemCollection
@@ -93,7 +95,8 @@ namespace To_Do_List_App
         private ListSection? _currentSection;
         private ListItem? _currentItem;
         private int _currentOrdinalPosition;
-        private bool _isSettingItemProperties;
+        private string? _currentProperty;
+        private bool _isCurrentlySettingItemProperties;
 
         public ListParser()
         {
@@ -102,7 +105,8 @@ namespace To_Do_List_App
             _currentSection = null;
             _currentItem = null;
             _currentOrdinalPosition = 0;
-            _isSettingItemProperties = false;
+            _currentProperty = null;
+            _isCurrentlySettingItemProperties = false;
         }
 
         public ToDoList CreateFromFilepath(string filepath)
@@ -299,20 +303,30 @@ namespace To_Do_List_App
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
             // Add property to current item
-            if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition)
+            if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition + 1)
             {
             }
 
             // Add property to current property
-            else if (false)
+            else if (ordinalPosition == _currentOrdinalPosition + 1)
             {
+                if (_isCurrentlySettingItemProperties && ordinalPosition == 1)
+                {
+                    GetTypeParameters(value, out ItemType itemType, out ItemCollection itemCollection);
+                }
             }
 
             // Add property to list
             else if (_currentSection is null && _currentListSection is null && ordinalPosition == 0)
             {
+                // Check if defining item properties
+                if (propertyName == "Item")
+                {
+                    _isCurrentlySettingItemProperties = true;
+                }
+
                 // Check if property name and value are valid
-                if (MasterPropertyList.ContainsKey(propertyName) && MasterPropertyList[propertyName].Contains(value))
+                else if (MasterPropertyList.ContainsKey(propertyName) && MasterPropertyList[propertyName].Contains(value))
                 {
                     _list.ListProperties.Add(propertyName, value);
                 }
@@ -346,6 +360,67 @@ namespace To_Do_List_App
                 ListSection section = new ListSection(value);
                 _list.Sections.Add(section);
                 _currentSection = section;
+            }
+        }
+
+        private void GetTypeParameters(string input, out ItemType itemType, out ItemCollection itemCollection)
+        {
+            string[] substrings = input.Split(' ');
+            string potentialItemType;
+            string potentialItemCollection;
+
+            switch (substrings.Length)
+            {
+                case 1:
+                    potentialItemType = substrings[0];
+                    potentialItemCollection = "single";
+
+                    break;
+                case 2:
+                    potentialItemType = substrings[1];
+                    potentialItemCollection = "unordered " + substrings[0];
+
+                    break;
+                case 3:
+                    potentialItemType = substrings[2];
+                    potentialItemCollection = substrings[0] + " " + substrings[1];
+
+                    break;
+                default:
+                    throw new Exception($"Unrecognized data type: {input}");
+            }
+
+            switch (potentialItemType)
+            {
+                case "string":
+                    itemType = ItemType.String;
+                    break;
+                case "int":
+                    itemType = ItemType.Int;
+                    break;
+                case "date":
+                    itemType = ItemType.Date;
+                    break;
+                case "bool":
+                    itemType = ItemType.Bool;
+                    break;
+                default:
+                    throw new Exception($"Unrecognized data type: {input}");
+            }
+
+            switch (potentialItemCollection)
+            {
+                case "single":
+                    itemCollection = ItemCollection.Single;
+                    break;
+                case "unordered list":
+                    itemCollection = ItemCollection.UnorderedList;
+                    break;
+                case "ordered list":
+                    itemCollection = ItemCollection.OrderedList;
+                    break;
+                default:
+                    throw new Exception($"Unrecognized data type: {input}");
             }
         }
     }
