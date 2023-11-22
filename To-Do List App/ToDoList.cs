@@ -8,12 +8,14 @@ namespace To_Do_List_App
     public class ToDoList
     {
         public string? Name;
-        public Dictionary<string, string> Properties;
+        public Dictionary<string, string> ListProperties;
+        public Dictionary<string, (ItemType, ItemCollection)> ItemProperties;
         public List<ListSection> Sections;
 
         public ToDoList()
         {
-            Properties = new Dictionary<string, string>();
+            ListProperties = new Dictionary<string, string>();
+            ItemProperties = new Dictionary<string, (ItemType, ItemCollection)>();
             Sections = new List<ListSection>();
         }
 
@@ -25,6 +27,20 @@ namespace To_Do_List_App
             CompleteItem,
             Property,
             None
+        }
+
+        public enum ItemType
+        {
+            Int,
+            String,
+            Date
+        }
+
+        public enum ItemCollection
+        {
+            Single,
+            UnorderedList,
+            OrderedList
         }
 
         public static Dictionary<string, List<string>> MasterPropertyList = new Dictionary<string, List<string>>()
@@ -55,8 +71,8 @@ namespace To_Do_List_App
     {
         public string Name;
         public bool IsComplete;
-        public Dictionary<string, string> BuiltInProperties;
-        public Dictionary<string, string> CustomProperties;
+        public Dictionary<string, object> BuiltInProperties;
+        public Dictionary<string, object> CustomProperties;
         public ListItem? Parent;
         public List<ListItem>? Children;
 
@@ -64,8 +80,8 @@ namespace To_Do_List_App
         {
             Name = name;
             IsComplete = isComplete;
-            BuiltInProperties = new Dictionary<string, string>();
-            CustomProperties = new Dictionary<string, string>();
+            BuiltInProperties = new Dictionary<string, object>();
+            CustomProperties = new Dictionary<string, object>();
             Children = new List<ListItem> { };
         }
     }
@@ -77,6 +93,7 @@ namespace To_Do_List_App
         private ListSection? _currentSection;
         private ListItem? _currentItem;
         private int _currentOrdinalPosition;
+        private bool _isSettingItemProperties;
 
         public ListParser()
         {
@@ -85,6 +102,7 @@ namespace To_Do_List_App
             _currentSection = null;
             _currentItem = null;
             _currentOrdinalPosition = 0;
+            _isSettingItemProperties = false;
         }
 
         public ToDoList CreateFromFilepath(string filepath)
@@ -280,13 +298,17 @@ namespace To_Do_List_App
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
-            if (_currentItem is not null)
+            if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition)
             {
-
+                // Add property to current item
             }
-            else if (_currentListSection is null && ordinalPosition == 0)
+            else if ()
             {
-
+                // Add property to current property
+            }
+            else if (_currentSection is null && _currentListSection is null && ordinalPosition == 0)
+            {
+                // Add property to list
             }
         }
 
