@@ -146,30 +146,37 @@ namespace To_Do_List_App
 
         private LineIdentifier GetIdentifier(string line)
         {
-            if (line.Length < 4) return LineIdentifier.None; //TODO: Add a more proper check, in theory a title could exist that is three characters long
-
-            switch (line.Substring(0, 2))
+            try
             {
-                case "- ":
-                    switch (line.Substring(2, 4))
-                    {
-                        case "[x] ":
-                            return LineIdentifier.CompleteItem;
-                        case "[X] ":
-                            return LineIdentifier.CompleteItem;
-                        case "[ ] ":
-                            return LineIdentifier.IncompleteItem;
-                        default:
-                            return LineIdentifier.Property;
-                    }
-                case "##":
-                    if (line[2] != ' ') goto default;
-                    return LineIdentifier.SectionHeader;
-                case "# ":
-                    return LineIdentifier.ListHeader;
-                default:
-                    return LineIdentifier.None;
+                switch (line.Substring(0, 2))
+                {
+                    case "- ":
+                        switch (line.Substring(2, 4))
+                        {
+                            case "[x] ":
+                                return LineIdentifier.CompleteItem;
+                            case "[X] ":
+                                return LineIdentifier.CompleteItem;
+                            case "[ ] ":
+                                return LineIdentifier.IncompleteItem;
+                            default:
+                                return LineIdentifier.Property;
+                        }
+                    case "##":
+                        if (line[2] != ' ') goto default;
+                        return LineIdentifier.SectionHeader;
+                    case "# ":
+                        return LineIdentifier.ListHeader;
+                    default:
+                        return LineIdentifier.None;
+                }
             }
+            catch
+            {
+                return LineIdentifier.None;
+            }
+
+            
         }
 
         private List<string> SplitLine(string line, LineIdentifier identifier)
