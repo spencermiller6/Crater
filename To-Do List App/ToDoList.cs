@@ -146,6 +146,8 @@ namespace To_Do_List_App
 
         private LineIdentifier GetIdentifier(string line)
         {
+            if (line.Length < 4) return LineIdentifier.None; //TODO: Add a more proper check, in theory a title could exist that is three characters long
+
             switch (line.Substring(0, 2))
             {
                 case "- ":
@@ -161,7 +163,7 @@ namespace To_Do_List_App
                             return LineIdentifier.Property;
                     }
                 case "##":
-                    if (line[2] != ' ') goto default; //TODO: might throw error
+                    if (line[2] != ' ') goto default;
                     return LineIdentifier.SectionHeader;
                 case "# ":
                     return LineIdentifier.ListHeader;
@@ -195,8 +197,12 @@ namespace To_Do_List_App
                     index = line.IndexOf('-');
                     substrings.Add(line.Substring(0, index));
 
-                    index = line.IndexOf(':');
-                    substrings.Add(line.Substring(index));
+                    int index2 = line.IndexOf(':');
+                    substrings.Add(line.Substring(index + 2, index2 - index - 2));
+
+
+                    string substring = line.Substring(index2 + 1);
+                    substrings.Add(substring.TrimStart());
 
                     break;
                 case LineIdentifier.SectionHeader:
@@ -231,14 +237,14 @@ namespace To_Do_List_App
         {
             ListItem item = new ListItem(value, isCompleted);
 
-            while (ordinalPosition <= _currentOrdinalPosition)
+            while (ordinalPosition <= _currentOrdinalPosition && _currentOrdinalPosition > 0)
             {
                 _currentItem = _currentItem.Parent;
                 _currentOrdinalPosition--;
             }
 
-            // If the current item's index is 0, add the new item directly to the current section
-            if (_currentOrdinalPosition == 0)
+            // If the item's ordinal position is 0, add the new item directly to the current section
+            if (ordinalPosition == 0)
             {
                 //TODO: need to make sure there is a current section, move this logic to a method
                 _currentSection.Items.Add(item);
@@ -246,6 +252,7 @@ namespace To_Do_List_App
             // Otherwise, add the new item as a child of the current one
             else
             {
+                item.Parent = _currentItem;
                 _currentItem.Children.Add(item);
             }
 
@@ -255,7 +262,14 @@ namespace To_Do_List_App
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
+            if (_currentItem is not null)
+            {
 
+            }
+            else if (_currentListSection is null && ordinalPosition == 0)
+            {
+
+            }
         }
 
         private void ParseListHeader(string value)
