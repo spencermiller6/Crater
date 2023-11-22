@@ -26,6 +26,17 @@ namespace To_Do_List_App
             Property,
             None
         }
+
+        public static Dictionary<string, List<string>> MasterPropertyList = new Dictionary<string, List<string>>()
+        {
+            { "Type", new List<string>() { "Standard", "Template" } },
+            { "Completion", new List<string>() { "Immediate", "Long-Term", "Disabled" } },
+            { "Completed Items", new List<string>() { "Enabled", "Disabled" } },
+            { "Children", new List<string>() { "Enabled", "Disabled" } },
+            { "Notes", new List<string>() { "Enabled", "Disabled" } },
+            { "Date", new List<string>() { "Enabled", "Disabled" } },
+            { "Priority", new List<string>() { "Enabled", "Disabled" } }
+        };
     }
 
     public class ListSection
