@@ -378,16 +378,21 @@ namespace To_Do_List_App
 
             switch (substrings.Length)
             {
+                // input looks like "string"
                 case 1:
                     potentialItemType = substrings[0];
                     potentialItemCollection = "single";
 
                     break;
+
+                // input looks like "list string"
                 case 2:
                     potentialItemType = substrings[1];
                     potentialItemCollection = "unordered " + substrings[0];
 
                     break;
+
+                // input looks like "unordered list string" or "ordered list string"
                 case 3:
                     potentialItemType = substrings[2];
                     potentialItemCollection = substrings[0] + " " + substrings[1];
