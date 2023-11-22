@@ -298,17 +298,24 @@ namespace To_Do_List_App
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
+            // Add property to current item
             if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition)
             {
-                // Add property to current item
             }
-            else if ()
+
+            // Add property to current property
+            else if (false)
             {
-                // Add property to current property
             }
+
+            // Add property to list
             else if (_currentSection is null && _currentListSection is null && ordinalPosition == 0)
             {
-                // Add property to list
+                // Check if property name and value are valid
+                if (MasterPropertyList.ContainsKey(propertyName) && MasterPropertyList[propertyName].Contains(value))
+                {
+                    _list.ListProperties.Add(propertyName, value);
+                }
             }
         }
 
