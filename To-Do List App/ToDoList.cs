@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System;
 using static To_Do_List_App.ToDoList;
+using System.Windows.Documents;
 
 namespace To_Do_List_App
 {
@@ -286,12 +287,27 @@ namespace To_Do_List_App
             // If the item's ordinal position is 0, add the new item directly to the current section
             if (ordinalPosition == 0)
             {
-                //TODO: need to make sure there is a current section, move this logic to a method
+                // If there is no defined section, create a general one. The name general is quasi-reserved and can be user-defined,
+                // however unsorted items will also be added to this section. If there are no other sections defined, its title will
+                // not be shown as there is no need to descern between non-existant sections.
+                if(_currentSection is null)
+                {
+                    ListSection section = new ListSection("General");
+
+                    _list.Sections.Add(section);
+                    _currentSection = section;
+                }
+
                 _currentSection.Items.Add(item);
             }
             // Otherwise, add the new item as a child of the current one
             else
             {
+                if (_currentItem is null)
+                {
+                    throw new Exception("Can't add item to missing parent.");
+                }
+
                 item.Parent = _currentItem;
                 _currentItem.Children.Add(item);
             }
