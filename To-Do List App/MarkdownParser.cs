@@ -255,7 +255,7 @@ namespace To_Do_List_App
                         throw new Exception($"A property with the name {propertyName} is already defined.");
                     }
 
-                    GetTypeParameters(value, out ItemType itemType, out ItemCollection itemCollection);
+                    GetTypeParameters(value, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection);
                     _list.ItemProperties.Add(propertyName, (itemType, itemCollection));
                     // TODO: find a place to reset the _isCurrentlySettingItemProperties flag once done setting item properties
                 }
@@ -308,7 +308,7 @@ namespace To_Do_List_App
             }
         }
 
-        private void GetTypeParameters(string input, out ItemType itemType, out ItemCollection itemCollection)
+        private void GetTypeParameters(string input, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection)
         {
             string[] substrings = input.Split(' ');
             string potentialItemType;
@@ -343,16 +343,16 @@ namespace To_Do_List_App
             switch (potentialItemType)
             {
                 case "string":
-                    itemType = ItemType.String;
+                    itemType = ListItem.ItemType.String;
                     break;
                 case "int":
-                    itemType = ItemType.Int;
+                    itemType = ListItem.ItemType.Int;
                     break;
                 case "date":
-                    itemType = ItemType.Date;
+                    itemType = ListItem.ItemType.Date;
                     break;
                 case "bool":
-                    itemType = ItemType.Bool;
+                    itemType = ListItem.ItemType.Bool;
                     break;
                 default:
                     throw new Exception($"Unrecognized data type: {input}");
@@ -361,13 +361,13 @@ namespace To_Do_List_App
             switch (potentialItemCollection)
             {
                 case "single":
-                    itemCollection = ItemCollection.Single;
+                    itemCollection = ListItem.ItemCollection.Single;
                     break;
                 case "unordered list":
-                    itemCollection = ItemCollection.UnorderedList;
+                    itemCollection = ListItem.ItemCollection.UnorderedList;
                     break;
                 case "ordered list":
-                    itemCollection = ItemCollection.OrderedList;
+                    itemCollection = ListItem.ItemCollection.OrderedList;
                     break;
                 default:
                     throw new Exception($"Unrecognized data type: {input}");

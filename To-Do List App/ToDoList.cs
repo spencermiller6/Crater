@@ -11,13 +11,13 @@ namespace To_Do_List_App
     {
         public string? Name;
         public Dictionary<string, string> ListProperties;
-        public Dictionary<string, (ItemType, ItemCollection)> ItemProperties;
+        public Dictionary<string, (ListItem.ItemType, ListItem.ItemCollection)> ItemProperties;
         public List<ListSection> Sections;
 
         public ToDoList()
         {
             ListProperties = new Dictionary<string, string>();
-            ItemProperties = new Dictionary<string, (ItemType, ItemCollection)>();
+            ItemProperties = new Dictionary<string, (ListItem.ItemType, ListItem.ItemCollection)>();
             Sections = new List<ListSection>();
         }
 
@@ -29,21 +29,6 @@ namespace To_Do_List_App
             CompleteItem,
             Property,
             None
-        }
-
-        public enum ItemType
-        {
-            String,
-            Int,
-            Date,
-            Bool
-        }
-
-        public enum ItemCollection
-        {
-            Single,
-            UnorderedList,
-            OrderedList
         }
 
         public static Dictionary<string, List<string>> MasterPropertyList = new Dictionary<string, List<string>>()
@@ -72,6 +57,21 @@ namespace To_Do_List_App
 
     public class ListItem
     {
+        public enum ItemType
+        {
+            String,
+            Int,
+            Date,
+            Bool
+        }
+
+        public enum ItemCollection
+        {
+            Single,
+            UnorderedList,
+            OrderedList
+        }
+
         public string Name;
         public bool IsComplete;
         public Dictionary<string, object> BuiltInProperties;
