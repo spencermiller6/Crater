@@ -135,6 +135,12 @@ namespace To_Do_List_App
             }
         }
 
+        /// <summary>
+        /// Splits a line of markdown into its relevant tokens
+        /// </summary>
+        /// <param name="line">A line of markdown to be split</param>.
+        /// <param name="identifier">The identifier representing the type of parsed element that's being split</param>
+        /// <returns>A list of strings containing the various tokens, with its composition depending on the identifier:</returns>
         private List<string> SplitLine(string line, LineIdentifier identifier)
         {
             List<string> substrings = new List<string>();
@@ -145,37 +151,47 @@ namespace To_Do_List_App
                 case LineIdentifier.CompleteItem:
                     index = line.IndexOf('-');
 
-                    substrings.Add(line.Substring(0, index));
-                    substrings.Add(line.Substring(index + 6));
+                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
+                    substrings.Add(line.Substring(index + 6)); // Substring 1: Item name
 
                     break;
                 case LineIdentifier.IncompleteItem:
                     index = line.IndexOf('-');
 
-                    substrings.Add(line.Substring(0, index));
-                    substrings.Add(line.Substring(index + 6));
+                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
+                    substrings.Add(line.Substring(index + 6)); // Substing 1: Item name
 
                     break;
                 case LineIdentifier.Property:
                     index = line.IndexOf('-');
-                    substrings.Add(line.Substring(0, index));
+                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
 
                     int index2 = line.IndexOf(':');
-                    substrings.Add(line.Substring(index + 2, index2 - index - 2));
 
+                    // If line represents merely a property value
+                    if (index2 == -1)
+                    {
+                        substrings.Add(line.Substring(index + 2)); // Substing 1: Property value
+                    }
 
-                    string substring = line.Substring(index2 + 1);
-                    substrings.Add(substring.TrimStart());
+                    // If line represents a property declaration, with or without a value
+                    else
+                    {
+                        substrings.Add(line.Substring(index + 2, index2 - index - 2)); // Substing 1: Property name
+
+                        string substring = line.Substring(index2 + 1);
+                        substrings.Add(substring.TrimStart()); // Substing 2: Property value
+                    }
 
                     break;
                 case LineIdentifier.SectionHeader:
                     index = line.IndexOf('#');
-                    substrings.Add(line.Substring(index + 3));
+                    substrings.Add(line.Substring(index + 3)); // Substing 0: Section name
 
                     break;
                 case LineIdentifier.ListHeader:
                     index = line.IndexOf('#');
-                    substrings.Add(line.Substring(index + 2));
+                    substrings.Add(line.Substring(index + 2)); // Substing 0: Indentation
 
                     break;
             }
@@ -240,6 +256,32 @@ namespace To_Do_List_App
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
+            // Determine whether we have a list property or an item property
+
+                // Add property value to current property
+
+                    // If list prop, define
+
+                    // If item prop, and value to property
+
+                // Set property name as current property
+
+                    // If list prop, 
+
+                    // If item prop, 
+
+                // Add property name and value to current item
+
+                    // If list prop, 
+
+                    // If item prop, 
+
+
+
+
+
+
+
             // Add property to current item
             if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition + 1)
             {
