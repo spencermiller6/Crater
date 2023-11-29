@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System;
-using static To_Do_List_App.ToDoList;
-using System.Windows.Documents;
 
 namespace To_Do_List_App
 {
@@ -11,13 +7,13 @@ namespace To_Do_List_App
     {
         public string? Name;
         public Dictionary<string, string> ListProperties;
-        public Dictionary<string, (ListItem.ItemType, ListItem.ItemCollection)> ItemProperties;
+        public List<string> ItemProperties;
         public List<ListSection> Sections;
 
         public ToDoList()
         {
             ListProperties = new Dictionary<string, string>();
-            ItemProperties = new Dictionary<string, (ListItem.ItemType, ListItem.ItemCollection)>();
+            ItemProperties = new List<string>();
             Sections = new List<ListSection>();
         }
 
@@ -31,7 +27,7 @@ namespace To_Do_List_App
             None
         }
 
-        public static Dictionary<string, List<string>> MasterPropertyList = new Dictionary<string, List<string>>()
+        public Dictionary<string, List<string>> MasterPropertyList = new Dictionary<string, List<string>>()
         {
             { "Type", new List<string>() { "Standard", "Template" } },
             { "Completion", new List<string>() { "Immediate", "Long-Term", "Disabled" } },
@@ -57,25 +53,11 @@ namespace To_Do_List_App
 
     public class ListItem
     {
-        public enum ItemType
-        {
-            String,
-            Int,
-            Date,
-            Bool
-        }
-
-        public enum ItemCollection
-        {
-            Single,
-            UnorderedList,
-            OrderedList
-        }
-
         public string Name;
         public bool IsComplete;
-        public Dictionary<string, object> BuiltInProperties;
-        public Dictionary<string, object> CustomProperties;
+        public bool IsStarred;
+        public DateTime Date;
+        public Dictionary<string, string> Properties;
         public ListItem? Parent;
         public List<ListItem>? Children;
 
@@ -83,8 +65,8 @@ namespace To_Do_List_App
         {
             Name = name;
             IsComplete = isComplete;
-            BuiltInProperties = new Dictionary<string, object>();
-            CustomProperties = new Dictionary<string, object>();
+            IsStarred = false;
+            Properties = new Dictionary<string, string>();
             Children = new List<ListItem> { };
         }
     }

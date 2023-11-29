@@ -171,7 +171,8 @@ namespace To_Do_List_App
                     // If line represents merely a property value
                     if (index2 == -1)
                     {
-                        substrings.Add(line.Substring(index + 2)); // Substing 1: Property value
+                        substrings.Add(_currentProperty); //Substing 1: Property name
+                        substrings.Add(line.Substring(index + 2)); // Substing 2: Property value
                     }
 
                     // If line represents a property declaration, with or without a value
@@ -256,28 +257,54 @@ namespace To_Do_List_App
 
         private void ParseProperty(int ordinalPosition, string propertyName, string value)
         {
-            // Determine whether we have a list property or an item property
+            // If declaring list properties
+            if (_currentSection is null && _currentListSection is null)
+            {
+                if (_currentProperty is null && propertyName == "Item")
+                {
+                    _currentProperty = propertyName;
 
-                // Add property value to current property
+                    if (value is not null)
+                    {
+                        throw new Exception("Can't assign property value inline with the declaration of item properties.");
+                    }
+                }
+                
+                if (_currentProperty == "Item")
+                {
+                    // set item property
+                    return;
+                }
+                
+                if (ToDoList.MasterPropertyList.ContainsKey(propertyName))
+                {
+                    if (ToDoList.MasterPropertyList[propertyName].Contains(value))
+                    {
 
-                    // If list prop, define
+                    }
 
-                    // If item prop, and value to property
-
-                // Set property name as current property
-
-                    // If list prop, 
-
-                    // If item prop, 
-
-                // Add property name and value to current item
-
-                    // If list prop, 
-
-                    // If item prop, 
+                    return;
+                }
+                else
+                {
+                    throw new Exception($"{propertyName} is not a recognized list property.");
+                }
+            }
 
 
+            // If beginning the declaration of item properties
+            if (propertyName == "Item" && _currentSection is null && _currentListSection is null)
+            {
+                _currentProperty = propertyName;
 
+                if (value is not null)
+                {
+                    throw new Exception("Can't assign property value inline with the declaration of item properties.");
+                }
+            }
+
+            // If adding a property to the item template
+            else if (_currentProperty == "Item" && )
 
 
 
@@ -290,7 +317,7 @@ namespace To_Do_List_App
             // Add property to current property
             else if (ordinalPosition == _currentOrdinalPosition + 1)
             {
-                if (_isCurrentlySettingItemProperties && ordinalPosition == 1)
+                if (_currentItem != null && ordinalPosition == 1)
                 {
                     if (_list.ItemProperties.ContainsKey(propertyName))
                     {
