@@ -59,19 +59,25 @@ namespace To_Do_List_App
 
             if (line.Substring(0, 2) == "- ")
             {
-                if (line.Length < 5)
+                if (line.Length < 6)
                 {
                     ParseProperty2(line);
                 }
                 else
                 {
+                    string value;
+
                     switch (line.Substring(2, 4))
                     {
                         case "[x] " or "[X] ":
-                            ParseItem2(line, true);
+                            value = line.Substring(6);
+                            ParseItem2(value, true);
+
                             break;
                         case "[ ] ":
-                            ParseItem2(line, false);
+                            value = line.Substring(6);
+                            ParseItem2(value, false);
+
                             break;
                         default:
                             ParseProperty2(line);
@@ -83,9 +89,13 @@ namespace To_Do_List_App
             {
                 ParseSection2(line);
             }
-            else if (line.Substring(0, 3) == "## ")
+            else if (line.Length >= 3 && line.Substring(0, 3) == "## ")
             {
                 ParseGroup2(line);
+            }
+            else
+            {
+                throw new Exception($"Unrecognized identifier in line: {line}");
             }
         }
 
