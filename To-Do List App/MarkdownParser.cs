@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace To_Do_List_App
 
                 while (line != null)
                 {
-                    ParseLine(line);
+                    ParseLine2(line);
                     line = reader.ReadLine();
                 }
             }
@@ -54,7 +55,8 @@ namespace To_Do_List_App
         {
             if (line.Length < 2)
             {
-                throw new Exception("No valid elements have a length less than two.");
+                Debug.WriteLine("No valid elements have a length less than two.");
+                return;
             }
 
             if (line.Substring(0, 2) == "- ")
@@ -95,24 +97,29 @@ namespace To_Do_List_App
             }
             else
             {
-                throw new Exception($"Unrecognized identifier in line: {line}");
+                Debug.WriteLine($"Unrecognized identifier in line: {line}");
+                return;
             }
         }
 
         public void ParseItem2(string line, bool isComplete)
         {
+            Debug.WriteLine($"Item ({isComplete}): {line}");
         }
 
         public void ParseProperty2(string line)
         {
+            Debug.WriteLine($"Property: {line}");
         }
 
         public void ParseSection2(string line)
         {
+            Debug.WriteLine($"Section: {line}");
         }
 
         public void ParseGroup2(string line)
         {
+            Debug.WriteLine($"Group: {line}");
         }
 
         public void ParseLine(string line)
@@ -147,13 +154,13 @@ namespace To_Do_List_App
                     propertyName = substrings[1];
                     value = substrings[2];
 
-                    ParseProperty(ordinalPosition, propertyName, value);
+                    //ParseProperty(ordinalPosition, propertyName, value);
                     break;
                 case LineIdentifier.SectionHeader:
                     _currentItem = null;
                     _currentProperty = null;
                     value = substrings[0];
-                    ParseSectionHeader(value);
+                    //ParseSectionHeader(value);
 
                     break;
                 case LineIdentifier.ListHeader:
@@ -161,7 +168,7 @@ namespace To_Do_List_App
                     _currentItem = null;
                     _currentProperty = null;
                     value = substrings[0];
-                    ParseListHeader(value);
+                    //ParseListHeader(value);
 
                     break;
             }
@@ -320,192 +327,192 @@ namespace To_Do_List_App
             _currentOrdinalPosition = ordinalPosition;
         }
 
-        private void ParseProperty(int ordinalPosition, string propertyName, string value)
-        {
-            // If declaring list properties
-            if (_currentSection is null && _currentListSection is null)
-            {
-                if (_currentProperty is null && propertyName == "Item")
-                {
-                    _currentProperty = propertyName;
+        //private void ParseProperty(int ordinalPosition, string propertyName, string value)
+        //{
+        //    // If declaring list properties
+        //    if (_currentSection is null && _currentListSection is null)
+        //    {
+        //        if (_currentProperty is null && propertyName == "Item")
+        //        {
+        //            _currentProperty = propertyName;
 
-                    if (value is not null)
-                    {
-                        throw new Exception("Can't assign property value inline with the declaration of item properties.");
-                    }
-                }
+        //            if (value is not null)
+        //            {
+        //                throw new Exception("Can't assign property value inline with the declaration of item properties.");
+        //            }
+        //        }
                 
-                if (_currentProperty == "Item")
-                {
-                    // set item property
-                    return;
-                }
+        //        if (_currentProperty == "Item")
+        //        {
+        //            // set item property
+        //            return;
+        //        }
                 
-                if (ToDoList.MasterPropertyList.ContainsKey(propertyName))
-                {
-                    if (ToDoList.MasterPropertyList[propertyName].Contains(value))
-                    {
+        //        if (ToDoList.MasterPropertyList.ContainsKey(propertyName))
+        //        {
+        //            if (ToDoList.MasterPropertyList[propertyName].Contains(value))
+        //            {
 
-                    }
+        //            }
 
-                    return;
-                }
-                else
-                {
-                    throw new Exception($"{propertyName} is not a recognized list property.");
-                }
-            }
-
-
-            // If beginning the declaration of item properties
-            if (propertyName == "Item" && _currentSection is null && _currentListSection is null)
-            {
-                _currentProperty = propertyName;
-
-                if (value is not null)
-                {
-                    throw new Exception("Can't assign property value inline with the declaration of item properties.");
-                }
-            }
-
-            // If adding a property to the item template
-            else if (_currentProperty == "Item" && )
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            throw new Exception($"{propertyName} is not a recognized list property.");
+        //        }
+        //    }
 
 
+        //    // If beginning the declaration of item properties
+        //    if (propertyName == "Item" && _currentSection is null && _currentListSection is null)
+        //    {
+        //        _currentProperty = propertyName;
+
+        //        if (value is not null)
+        //        {
+        //            throw new Exception("Can't assign property value inline with the declaration of item properties.");
+        //        }
+        //    }
+
+        //    // If adding a property to the item template
+        //    else if (_currentProperty == "Item" && )
 
 
-            // Add property to current item
-            if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition + 1)
-            {
-            }
 
-            // Add property to current property
-            else if (ordinalPosition == _currentOrdinalPosition + 1)
-            {
-                if (_currentItem != null && ordinalPosition == 1)
-                {
-                    if (_list.ItemProperties.ContainsKey(propertyName))
-                    {
-                        throw new Exception($"A property with the name {propertyName} is already defined.");
-                    }
 
-                    GetTypeParameters(value, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection);
-                    _list.ItemProperties.Add(propertyName, (itemType, itemCollection));
-                    // TODO: find a place to reset the _isCurrentlySettingItemProperties flag once done setting item properties
-                }
-            }
+        //    // Add property to current item
+        //    if (_currentItem is not null && ordinalPosition == _currentOrdinalPosition + 1)
+        //    {
+        //    }
 
-            // Add property to list
-            else if (_currentSection is null && _currentListSection is null && ordinalPosition == 0)
-            {
-                // Check if defining item properties
-                if (propertyName == "Item")
-                {
-                    _currentProperty = "Item";
-                }
+        //    // Add property to current property
+        //    else if (ordinalPosition == _currentOrdinalPosition + 1)
+        //    {
+        //        if (_currentItem != null && ordinalPosition == 1)
+        //        {
+        //            if (_list.ItemProperties.ContainsKey(propertyName))
+        //            {
+        //                throw new Exception($"A property with the name {propertyName} is already defined.");
+        //            }
 
-                // Check if property name and value are valid
-                else if (MasterPropertyList.ContainsKey(propertyName) && MasterPropertyList[propertyName].Contains(value))
-                {
-                    _list.ListProperties.Add(propertyName, value);
-                }
-            }
-        }
+        //            GetTypeParameters(value, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection);
+        //            _list.ItemProperties.Add(propertyName, (itemType, itemCollection));
+        //            // TODO: find a place to reset the _isCurrentlySettingItemProperties flag once done setting item properties
+        //        }
+        //    }
 
-        private void ParseListHeader(string value)
-        {
-            if (_list.Name is null)
-            {
-                _list.Name = value;
-            }
-            else if (value == "Active")
-            {
-                _currentListSection = "Active";
-            }
-            else if (value == "Completed")
-            {
-                _currentListSection = "Completed";
-            }
-        }
+        //    // Add property to list
+        //    else if (_currentSection is null && _currentListSection is null && ordinalPosition == 0)
+        //    {
+        //        // Check if defining item properties
+        //        if (propertyName == "Item")
+        //        {
+        //            _currentProperty = "Item";
+        //        }
 
-        private void ParseSectionHeader(string value)
-        {
-            if (_list.Sections.Any(section => section.Name == value))
-            {
-                _currentSection = _list.Sections.Find(section => section.Name == value);
-            }
-            else
-            {
-                ListSection section = new ListSection(value);
-                _list.Sections.Add(section);
-                _currentSection = section;
-            }
-        }
+        //        // Check if property name and value are valid
+        //        else if (MasterPropertyList.ContainsKey(propertyName) && MasterPropertyList[propertyName].Contains(value))
+        //        {
+        //            _list.ListProperties.Add(propertyName, value);
+        //        }
+        //    }
+        //}
 
-        private void GetTypeParameters(string input, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection)
-        {
-            string[] substrings = input.Split(' ');
-            string potentialItemType;
-            string potentialItemCollection;
+        //private void ParseListHeader(string value)
+        //{
+        //    if (_list.Name is null)
+        //    {
+        //        _list.Name = value;
+        //    }
+        //    else if (value == "Active")
+        //    {
+        //        _currentListSection = "Active";
+        //    }
+        //    else if (value == "Completed")
+        //    {
+        //        _currentListSection = "Completed";
+        //    }
+        //}
 
-            switch (substrings.Length)
-            {
-                // input looks like "string"
-                case 1:
-                    potentialItemType = substrings[0];
-                    potentialItemCollection = "single";
+        //private void ParseSectionHeader(string value)
+        //{
+        //    if (_list.Sections.Any(section => section.Name == value))
+        //    {
+        //        _currentSection = _list.Sections.Find(section => section.Name == value);
+        //    }
+        //    else
+        //    {
+        //        ListSection section = new ListSection(value);
+        //        _list.Sections.Add(section);
+        //        _currentSection = section;
+        //    }
+        //}
 
-                    break;
+        //private void GetTypeParameters(string input, out ListItem.ItemType itemType, out ListItem.ItemCollection itemCollection)
+        //{
+        //    string[] substrings = input.Split(' ');
+        //    string potentialItemType;
+        //    string potentialItemCollection;
 
-                // input looks like "list string"
-                case 2:
-                    potentialItemType = substrings[1];
-                    potentialItemCollection = "unordered " + substrings[0];
+        //    switch (substrings.Length)
+        //    {
+        //        // input looks like "string"
+        //        case 1:
+        //            potentialItemType = substrings[0];
+        //            potentialItemCollection = "single";
 
-                    break;
+        //            break;
 
-                // input looks like "unordered list string" or "ordered list string"
-                case 3:
-                    potentialItemType = substrings[2];
-                    potentialItemCollection = substrings[0] + " " + substrings[1];
+        //        // input looks like "list string"
+        //        case 2:
+        //            potentialItemType = substrings[1];
+        //            potentialItemCollection = "unordered " + substrings[0];
 
-                    break;
-                default:
-                    throw new Exception($"Unrecognized data type: {input}");
-            }
+        //            break;
 
-            switch (potentialItemType)
-            {
-                case "string":
-                    itemType = ListItem.ItemType.String;
-                    break;
-                case "int":
-                    itemType = ListItem.ItemType.Int;
-                    break;
-                case "date":
-                    itemType = ListItem.ItemType.Date;
-                    break;
-                case "bool":
-                    itemType = ListItem.ItemType.Bool;
-                    break;
-                default:
-                    throw new Exception($"Unrecognized data type: {input}");
-            }
+        //        // input looks like "unordered list string" or "ordered list string"
+        //        case 3:
+        //            potentialItemType = substrings[2];
+        //            potentialItemCollection = substrings[0] + " " + substrings[1];
 
-            switch (potentialItemCollection)
-            {
-                case "single":
-                    itemCollection = ListItem.ItemCollection.Single;
-                    break;
-                case "unordered list":
-                    itemCollection = ListItem.ItemCollection.UnorderedList;
-                    break;
-                case "ordered list":
-                    itemCollection = ListItem.ItemCollection.OrderedList;
-                    break;
-                default:
-                    throw new Exception($"Unrecognized data type: {input}");
-            }
-        }
+        //            break;
+        //        default:
+        //            throw new Exception($"Unrecognized data type: {input}");
+        //    }
+
+        //    switch (potentialItemType)
+        //    {
+        //        case "string":
+        //            itemType = ListItem.ItemType.String;
+        //            break;
+        //        case "int":
+        //            itemType = ListItem.ItemType.Int;
+        //            break;
+        //        case "date":
+        //            itemType = ListItem.ItemType.Date;
+        //            break;
+        //        case "bool":
+        //            itemType = ListItem.ItemType.Bool;
+        //            break;
+        //        default:
+        //            throw new Exception($"Unrecognized data type: {input}");
+        //    }
+
+        //    switch (potentialItemCollection)
+        //    {
+        //        case "single":
+        //            itemCollection = ListItem.ItemCollection.Single;
+        //            break;
+        //        case "unordered list":
+        //            itemCollection = ListItem.ItemCollection.UnorderedList;
+        //            break;
+        //        case "ordered list":
+        //            itemCollection = ListItem.ItemCollection.OrderedList;
+        //            break;
+        //        default:
+        //            throw new Exception($"Unrecognized data type: {input}");
+        //    }
+        //}
     }
 }
