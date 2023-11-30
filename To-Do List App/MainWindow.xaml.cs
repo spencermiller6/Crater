@@ -35,7 +35,7 @@ namespace To_Do_List_App
         public void ParseFile(string filepath)
         {
             ListParser listParser = new ListParser();
-            ToDoList list = listParser.CreateFromFilepath(filepath);
+            List list = listParser.CreateFromFilepath(filepath);
         }
     }
 }

@@ -5,22 +5,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static To_Do_List_App.ToDoList;
+using static To_Do_List_App.List;
 
 namespace To_Do_List_App
 {
     public class ListParser
     {
-        private ToDoList _list;
+        private List _list;
         private string _currentListSection;
-        private ListSection? _currentSection;
-        private ListItem? _currentItem;
+        private Group? _currentSection;
+        private Item? _currentItem;
         private int _currentOrdinalPosition;
         private string? _currentProperty;
 
         public ListParser()
         {
-            _list = new ToDoList();
+            _list = new List();
             _currentListSection = "";
             _currentSection = null;
             _currentItem = null;
@@ -28,7 +28,7 @@ namespace To_Do_List_App
             _currentProperty = null;
         }
 
-        public ToDoList CreateFromFilepath(string filepath)
+        public List CreateFromFilepath(string filepath)
         {
             StreamReader reader = new StreamReader(filepath);
             string? line;
@@ -117,6 +117,7 @@ namespace To_Do_List_App
 
         public void ParseSection2(string line)
         {
+
             Debug.WriteLine($"Section: {line}");
         }
 
@@ -294,7 +295,7 @@ namespace To_Do_List_App
 
         private void ParseItem(string value, bool isCompleted, int ordinalPosition)
         {
-            ListItem item = new ListItem(value, isCompleted);
+            Item item = new Item(value, isCompleted);
 
             while (ordinalPosition <= _currentOrdinalPosition && _currentOrdinalPosition > 0)
             {
@@ -310,9 +311,9 @@ namespace To_Do_List_App
                 // not be shown as there is no need to descern between non-existant sections.
                 if (_currentSection is null)
                 {
-                    ListSection section = new ListSection("General");
+                    Group section = new Group("General");
 
-                    _list.Sections.Add(section);
+                    _list.Groups.Add(section);
                     _currentSection = section;
                 }
 
