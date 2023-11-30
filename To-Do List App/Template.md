@@ -11,7 +11,7 @@
 	- Property 2 Name
 	- Property 3 Name
 
-## Section 1
+## Group 1
 
 - [ ] Item 1
 	- Notes: Item 1 Notes
@@ -37,13 +37,13 @@
 	- Date: MM/DD/YYYY
 - [ ] Item 3
 
-## Section 2
+## Group 2
 
-## Section 3
+## Group 3
 
-# Completed
+# Completed (This is an example of a "section")
 
-## Section 1
+## Group 1
 
 - [x] Item 4
 - [x] Item 5
