@@ -11,6 +11,8 @@
 	- Property 2 Name
 	- Property 3 Name
 
+# Incomplete (this line is necessary as it is an inferred section)
+
 ## Group 1
 
 - [ ] Item 1
@@ -41,7 +43,7 @@
 
 ## Group 3
 
-# Completed (This is an example of a "section")
+# Completed (This is an example of an explicit section)
 
 ## Group 1
 
