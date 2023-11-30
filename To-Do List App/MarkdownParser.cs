@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static To_Do_List_App.List;
+using System.Reflection;
 
 namespace To_Do_List_App
 {
@@ -15,7 +16,7 @@ namespace To_Do_List_App
         private Section _currentSection;
         private Group? _currentGroup;
         private Item? _currentItem;
-        private string? _currentProperty;
+        private Property? _currentProperty;
         private int _currentOrdinalPosition;
 
         public ListParser()
@@ -142,6 +143,54 @@ namespace To_Do_List_App
         public void ParseProperty2(string line, int ordinalPosition)
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
+
+            int index = line.IndexOf(':');
+
+            // If line represents merely a property value
+            if (index == -1)
+            {
+                if (_currentProperty is null || _currentOrdinalPosition >= ordinalPosition)
+                {
+                    Debug.WriteLine($"Can't set property value if property isn't specified.");
+                    return;
+                }
+
+                _currentProperty.Values.Add(line);
+            }
+
+            // If line represents a property declaration, with or without a value
+            else
+            {
+                string name = line.Substring(0, index);
+                string value = line.Substring(index + 1).TrimStart();
+
+                if (!_list.ItemProperties.Contains(name))
+                {
+                    Debug.WriteLine($"{name} is not a defined property.");
+                    return;
+                }
+
+                if (_currentItem is null)
+                {
+                    Debug.WriteLine($"Can't add a property if no item has been defined.");
+                    return;
+                }
+
+                if (_currentItem.Properties.ContainsKey(name))
+                {
+                    _currentProperty = _currentItem.Properties[name];
+                }
+                else
+                {
+                    Property property = new Property(name);
+                    _currentProperty = property;
+                }
+
+                if (value is not null)
+                {
+                    _currentProperty.AddValue(value);
+                }
+            }
         }
 
         public void ParseSection2(string line)

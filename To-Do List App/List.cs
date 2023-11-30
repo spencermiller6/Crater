@@ -48,7 +48,7 @@ namespace To_Do_List_App
         public bool IsComplete;
         public bool IsStarred;
         public DateTime Date;
-        public Dictionary<string, string> Properties;
+        public Dictionary<string, Property> Properties;
         public Item? Parent;
         public List<Item>? Children;
 
@@ -57,7 +57,7 @@ namespace To_Do_List_App
             Name = name;
             IsComplete = isComplete;
             IsStarred = false;
-            Properties = new Dictionary<string, string>();
+            Properties = new Dictionary<string, Property>();
             Children = new List<Item> { };
         }
 
@@ -69,6 +69,28 @@ namespace To_Do_List_App
             }
 
             Children.Add(item);
+        }
+    }
+
+    public class Property
+    {
+        public string Name;
+        public List<string> Values;
+
+        public Property(string name)
+        {
+            Name = name;
+            Values = new List<string> { };
+        }
+
+        public void AddValue(string value)
+        {
+            if (Values is null)
+            {
+                Values = new List<string>();
+            }
+
+            Values.Add(value);
         }
     }
 }
