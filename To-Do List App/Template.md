@@ -7,9 +7,9 @@
 - Notes: Enabled (default), Disabled
 - Date: Enabled (default), Disabled
 - Item:
-	- Property 1 Name: int, string, date, bool, list T/ordered list T
-	- Property 2 Name: Property 2 Type
-	- Property 3 Name: Property 3 Type
+	- Property 1 Name
+	- Property 2 Name
+	- Property 3 Name
 
 ## Section 1
 
@@ -23,7 +23,8 @@
 		- property 2 value 3
 	- Property 3 Name: property 3 value
 	- [ ] Child 1 Name
-		- Notes: Child 1 Notes
+		- Notes:
+			- Child 1 Notes
 	- [ ] Child 2 Name
 		- Date: MM/DD/YYYY
 		- Notes: Child 2 Notes
