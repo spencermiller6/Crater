@@ -60,58 +60,59 @@ namespace To_Do_List_App
             }
 
             int ordinalPosition = OrdinalPosition(line);
+            string content = line.TrimStart();
 
-            if (line.Substring(0, 2) == "- ")
+            if (content.Substring(0, 2) == "- ")
             {
-                if (line.Length < 6)
+                if (content.Length < 6)
                 {
-                    ParseProperty2(line);
+                    ParseProperty2(content, ordinalPosition);
                 }
                 else
                 {
                     string value;
 
-                    switch (line.Substring(2, 4))
+                    switch (content.Substring(2, 4))
                     {
                         case "[x] " or "[X] ":
-                            value = line.Substring(6);
-                            ParseItem2(value, true);
+                            value = content.Substring(6);
+                            ParseItem2(value, ordinalPosition, true);
 
                             break;
                         case "[ ] ":
-                            value = line.Substring(6);
-                            ParseItem2(value, false);
+                            value = content.Substring(6);
+                            ParseItem2(value, ordinalPosition, false);
 
                             break;
                         default:
-                            ParseProperty2(line);
+                            ParseProperty2(content, ordinalPosition);
                             break;
                     }
                 }
             }
-            else if (line.Substring(0, 2) == "# ")
+            else if (content.Substring(0, 2) == "# ")
             {
-                ParseSection2(line);
+                ParseSection2(content);
             }
-            else if (line.Length >= 3 && line.Substring(0, 3) == "## ")
+            else if (content.Length >= 3 && content.Substring(0, 3) == "## ")
             {
-                ParseGroup2(line);
+                ParseGroup2(content);
             }
             else
             {
-                Debug.WriteLine($"Unrecognized identifier in line: {line}");
+                Debug.WriteLine($"Unrecognized identifier in line: {content}");
                 return;
             }
         }
 
-        public void ParseItem2(string line, bool isComplete)
+        public void ParseItem2(string line, int ordinalPosition, bool isComplete)
         {
-            Debug.WriteLine($"Item ({isComplete}): {line}");
+            Debug.WriteLine($"{ordinalPosition} Item ({isComplete}): {line}");
         }
 
-        public void ParseProperty2(string line)
+        public void ParseProperty2(string line, int ordinalPosition)
         {
-            Debug.WriteLine($"Property: {line}");
+            Debug.WriteLine($"{ordinalPosition} Property: {line}");
         }
 
         public void ParseSection2(string line)
