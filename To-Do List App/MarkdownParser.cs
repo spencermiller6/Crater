@@ -59,6 +59,8 @@ namespace To_Do_List_App
                 return;
             }
 
+            int ordinalPosition = OrdinalPosition(line);
+
             if (line.Substring(0, 2) == "- ")
             {
                 if (line.Length < 6)
@@ -137,20 +139,20 @@ namespace To_Do_List_App
             {
                 case LineIdentifier.CompleteItem:
                     _currentProperty = null;
-                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    ordinalPosition = OrdinalPosition(substrings[0]);
                     value = substrings[1];
 
                     ParseItem(value, true, ordinalPosition);
                     break;
                 case LineIdentifier.IncompleteItem:
                     _currentProperty = null;
-                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    ordinalPosition = OrdinalPosition(substrings[0]);
                     value = substrings[1];
 
                     ParseItem(value, false, ordinalPosition);
                     break;
                 case LineIdentifier.Property:
-                    ordinalPosition = GetOrdinalPosition(substrings[0]);
+                    ordinalPosition = OrdinalPosition(substrings[0]);
                     propertyName = substrings[1];
                     value = substrings[2];
 
@@ -272,9 +274,13 @@ namespace To_Do_List_App
             return substrings;
         }
 
-        private int GetOrdinalPosition(string line)
+        private int OrdinalPosition(string line)
         {
-            string tabsOnly = line.Replace("    ", "\t");
+            int whitespaceCharacters = line.Length - line.TrimStart().Length;
+
+            string whitespace = line.Substring(0, whitespaceCharacters);
+            string tabsOnly = whitespace.Replace("    ", "\t");
+
             int tabCount = 0;
 
             foreach (char c in tabsOnly)
