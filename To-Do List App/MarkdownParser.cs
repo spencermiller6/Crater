@@ -12,20 +12,20 @@ namespace To_Do_List_App
     public class ListParser
     {
         private List _list;
-        private string _currentListSection;
-        private Group? _currentSection;
+        private Section _currentSection;
+        private Group? _currentGroup;
         private Item? _currentItem;
-        private int _currentOrdinalPosition;
         private string? _currentProperty;
+        private int _currentOrdinalPosition;
 
         public ListParser()
         {
             _list = new List();
-            _currentListSection = "";
-            _currentSection = null;
+            _currentSection = new Section("Incomplete");
+            _currentGroup = null;
             _currentItem = null;
-            _currentOrdinalPosition = 0;
             _currentProperty = null;
+            _currentOrdinalPosition = 0;
         }
 
         public List CreateFromFilepath(string filepath)
@@ -108,6 +108,35 @@ namespace To_Do_List_App
         public void ParseItem2(string line, int ordinalPosition, bool isComplete)
         {
             Debug.WriteLine($"{ordinalPosition} Item ({isComplete}): {line}");
+
+            Item item = new Item(line, isComplete);
+
+            while (_currentOrdinalPosition > ordinalPosition)
+            {
+                _currentItem = _currentItem?.Parent;
+                _currentOrdinalPosition--;
+            }
+
+            if (_currentItem is not null && ordinalPosition > _currentOrdinalPosition)
+            {
+                item.Parent = _currentItem;
+                _currentItem.AddChild(item);
+            }
+            else if (_currentGroup is not null)
+            {
+                _currentGroup.Items.Add(item);
+            }
+            else
+            {
+                Group group = new Group("General");
+                group.Items.Add(item);
+
+                _currentSection.Groups.Add(group.Name, group);
+                _currentGroup = group;
+            }
+
+            _currentItem = item;
+            _currentOrdinalPosition = ordinalPosition;
         }
 
         public void ParseProperty2(string line, int ordinalPosition)
@@ -168,7 +197,7 @@ namespace To_Do_List_App
 
                     break;
                 case LineIdentifier.ListHeader:
-                    _currentSection = null;
+                    _currentGroup = null;
                     _currentItem = null;
                     _currentProperty = null;
                     value = substrings[0];
@@ -309,15 +338,15 @@ namespace To_Do_List_App
                 // If there is no defined section, create a general one. The name general is quasi-reserved and can be user-defined,
                 // however unsorted items will also be added to this section. If there are no other sections defined, its title will
                 // not be shown as there is no need to descern between non-existant sections.
-                if (_currentSection is null)
+                if (_currentGroup is null)
                 {
                     Group section = new Group("General");
 
                     _list.Groups.Add(section);
-                    _currentSection = section;
+                    _currentGroup = section;
                 }
 
-                _currentSection.Items.Add(item);
+                _currentGroup.Items.Add(item);
             }
             // Otherwise, add the new item as a child of the current one
             else

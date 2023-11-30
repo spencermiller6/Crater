@@ -60,5 +60,15 @@ namespace To_Do_List_App
             Properties = new Dictionary<string, string>();
             Children = new List<Item> { };
         }
+
+        public void AddChild(Item item)
+        {
+            if (Children is null)
+            {
+                Children = new List<Item>();
+            }
+
+            Children.Add(item);
+        }
     }
 }
