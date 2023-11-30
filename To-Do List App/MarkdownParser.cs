@@ -50,6 +50,61 @@ namespace To_Do_List_App
             return _list;
         }
 
+        public void ParseLine2(string line)
+        {
+            if (line.Length < 2)
+            {
+                throw new Exception("No valid elements have a length less than two.");
+            }
+
+            if (line.Substring(0, 2) == "- ")
+            {
+                if (line.Length < 5)
+                {
+                    ParseProperty2(line);
+                }
+                else
+                {
+                    switch (line.Substring(2, 4))
+                    {
+                        case "[x] " or "[X] ":
+                            ParseItem2(line, true);
+                            break;
+                        case "[ ] ":
+                            ParseItem2(line, false);
+                            break;
+                        default:
+                            ParseProperty2(line);
+                            break;
+                    }
+                }
+            }
+            else if (line.Substring(0, 2) == "# ")
+            {
+                ParseSection2(line);
+            }
+            else if (line.Substring(0, 3) == "## ")
+            {
+                ParseGroup2(line);
+            }
+        }
+
+        public void ParseItem2(string line, bool isComplete)
+        {
+        }
+
+        public void ParseProperty2(string line)
+        {
+        }
+
+        public void ParseSection2(string line)
+        {
+        }
+
+        public void ParseGroup2(string line)
+        {
+        }
+
         public void ParseLine(string line)
         {
             LineIdentifier identifier = GetIdentifier(line.TrimStart());
