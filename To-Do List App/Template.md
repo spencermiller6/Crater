@@ -43,7 +43,8 @@
 
 ## Group 3
 
-# Completed (This is an example of an explicit section)
+# Complete
+^ (This is an example of an explicit section)
 
 ## Group 1
 

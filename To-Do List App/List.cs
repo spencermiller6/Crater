@@ -8,13 +8,11 @@ namespace To_Do_List_App
     {
         public string? Name;
         public Dictionary<string, Property> ListProperties;
-        public List<Property> ItemProperties;
         public Dictionary<string, Section> Sections;
 
         public List()
         {
             ListProperties = new Dictionary<string, Property>();
-            ItemProperties = new List<Property>();
             Sections = new Dictionary<string, Section>();
         }
     }

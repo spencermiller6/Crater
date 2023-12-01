@@ -14,51 +14,50 @@ namespace To_Do_List_App
     public class ListParser
     {
         private List _list;
-        private Section? _currentSection;
-        private Group? _currentGroup;
-        private Item? _currentItem;
-        private Property? _currentProperty;
-        private int? _currentOrdinalPosition;
+        private Section? _previousSection;
+        private Group? _previousGroup;
+        private Item? _previousItem;
+        private Property? _previousProperty;
+        private int _previousOrdinalPosition;
 
-        private Section CurrentSection
+        private Section PreviousSection
         {
-            get { return _currentSection; }
+            get { return _previousSection; }
             set
             {
-                _currentSection = value;
-                CurrentGroup = null;
+                _previousSection = value;
+                PreviousGroup = null;
             }
         }
 
-        private Group? CurrentGroup
+        private Group? PreviousGroup
         {
-            get { return _currentGroup; }
+            get { return _previousGroup; }
             set
             {
-                _currentGroup = value;
-                CurrentItem = null;
+                _previousGroup = value;
+                PreviousItem = null;
             }
         }
 
-        private Item? CurrentItem
+        private Item? PreviousItem
         {
-            get { return _currentItem; }
+            get { return _previousItem; }
             set
             {
-                _currentItem = value;
-                _currentProperty = null;
-                _currentOrdinalPosition = null;
+                _previousItem = value;
+                _previousProperty = null;
             }
         }
 
         public ListParser()
         {
             _list = new List();
-            _currentSection = null;
-            _currentGroup = null;
-            _currentItem = null;
-            _currentProperty = null;
-            _currentOrdinalPosition = 0;
+            _previousSection = null;
+            _previousGroup = null;
+            _previousItem = null;
+            _previousProperty = null;
+            _previousOrdinalPosition = 0;
         }
 
         public List CreateFromFilepath(string filepath)
@@ -90,7 +89,9 @@ namespace To_Do_List_App
         {
             foreach (var propertyDefinition in ListTemplate.ListProperties)
             {
+
                 Property property = new Property(propertyDefinition.Key, x => propertyDefinition.Value.Contains(x));
+                property.AddValue(propertyDefinition.Value.FirstOrDefault());
                 _list.ListProperties.Add(property.Name, property);
             }
 
@@ -165,45 +166,45 @@ namespace To_Do_List_App
 
             Item item = new Item(line, isComplete);
 
-            if (CurrentSection is null)
+            if (PreviousSection is null)
             {
                 Section section = new Section("Incomplete");
                 _list.Sections.Add(section.Name, section);
-                CurrentSection = section;
+                PreviousSection = section;
             }
 
-            if (CurrentGroup is null)
+            if (PreviousGroup is null)
             {
-                if (CurrentSection.Groups.ContainsKey("General"))
+                if (PreviousSection.Groups.ContainsKey("General"))
                 {
-                    CurrentGroup = CurrentSection.Groups["General"];
+                    PreviousGroup = PreviousSection.Groups["General"];
                 }
                 else
                 {
                     Group group = new Group("General");
-                    CurrentSection.Groups.Add(group.Name, group);
-                    CurrentGroup = group;
+                    PreviousSection.Groups.Add(group.Name, group);
+                    PreviousGroup = group;
                 }
             }
 
-            while (_currentOrdinalPosition > ordinalPosition)
+            while (_previousOrdinalPosition >= ordinalPosition && _previousOrdinalPosition > 0)
             {
-                CurrentItem = CurrentItem?.Parent;
-                _currentOrdinalPosition--;
+                PreviousItem = PreviousItem?.Parent;
+                _previousOrdinalPosition--;
             }
 
-            if (CurrentItem is not null && ordinalPosition > _currentOrdinalPosition)
+            if (PreviousItem is not null && ordinalPosition > _previousOrdinalPosition)
             {
-                item.Parent = CurrentItem;
-                CurrentItem.AddChild(item);
+                item.Parent = PreviousItem;
+                PreviousItem.AddChild(item);
             }
             else
             {
-                CurrentGroup.Items.Add(item);
+                PreviousGroup.Items.Add(item);
             }
 
-            CurrentItem = item;
-            _currentOrdinalPosition = ordinalPosition;
+            PreviousItem = item;
+            _previousOrdinalPosition = ordinalPosition;
 
             return;
         }
@@ -212,19 +213,19 @@ namespace To_Do_List_App
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
 
-            bool settingListProperties = _currentSection is null ? true : false;
+            bool settingListProperties = _previousSection is null ? true : false;
             int separaterIndex = line.IndexOf(':');
 
             // If line represents merely a property value
             if (separaterIndex == -1)
             {
-                if (_currentProperty is null || _currentOrdinalPosition >= ordinalPosition)
+                if (_previousProperty is null || ordinalPosition <= _previousOrdinalPosition)
                 {
                     Debug.WriteLine($"Can't set property value if property isn't specified.");
                     return;
                 }
 
-                _currentProperty.Values.Add(line);
+                _previousProperty.AddValue(line);
             }
 
             // If line represents a property declaration, with or without a value
@@ -237,35 +238,42 @@ namespace To_Do_List_App
                 {
                     if (!_list.ListProperties.ContainsKey(name))
                     {
-
+                        Debug.WriteLine($"{name} is not a valid property.");
+                        return;
                     }
-                }
 
-                if (!_list.ItemProperties.Exists(x => x.Name == name))
-                {
-                    Debug.WriteLine($"{name} is not a defined property.");
-                    return;
-                }
-
-                if (CurrentItem is null)
-                {
-                    Debug.WriteLine($"Can't add a property if no item has been defined.");
-                    return;
-                }
-
-                if (CurrentItem.Properties.ContainsKey(name))
-                {
-                    _currentProperty = CurrentItem.Properties[name];
+                    _previousProperty = _list.ListProperties[name];
                 }
                 else
                 {
-                    Property property = new Property(name);
-                    _currentProperty = property;
+                    // I definitely need to bring back the items property list as its own separate object
+                    if (!_list.ListProperties["Item"].Values.Contains(name))
+                    {
+                        Debug.WriteLine($"{name} is not a defined property.");
+                        return;
+                    }
+
+                    if (PreviousItem is null)
+                    {
+                        Debug.WriteLine($"Can't add a property if no item has been defined.");
+                        return;
+                    }
+
+                    if (PreviousItem.Properties.ContainsKey(name))
+                    {
+                        _previousProperty = PreviousItem.Properties[name];
+                    }
+                    else
+                    {
+                        Property property = new Property(name);
+                        PreviousItem.Properties.Add(property.Name, property);
+                        _previousProperty = property;
+                    }
                 }
 
-                if (value is not null)
+                if (!String.IsNullOrEmpty(value))
                 {
-                    _currentProperty.AddValue(value);
+                    _previousProperty.AddValue(value);
                 }
             }
 
@@ -282,12 +290,12 @@ namespace To_Do_List_App
             }
             else if (_list.Sections.ContainsKey(line))
             {
-                CurrentSection = _list.Sections[line];
+                PreviousSection = _list.Sections[line];
             }
             else if (ListTemplate.Sections.Contains(line))
             {
-                Section section = new Section(line);
-                CurrentSection = section;
+                PreviousSection = new Section(line);
+                _list.Sections.Add(PreviousSection.Name, PreviousSection);
             }
             else
             {
@@ -302,14 +310,20 @@ namespace To_Do_List_App
         {
             Debug.WriteLine($"Group: {line}");
 
-            if (_currentSection.Groups.ContainsKey(line))
+            if (PreviousSection is null)
             {
-                _currentGroup = _currentSection.Groups[line];
+                PreviousSection = new Section("Incomplete");
+                _list.Sections.Add(PreviousSection.Name, PreviousSection);
+            }
+
+            if (PreviousSection.Groups.ContainsKey(line))
+            {
+                PreviousGroup = PreviousSection.Groups[line];
             }
             else
             {
-                Group group = new Group(line);
-                _currentGroup = group;
+                PreviousGroup = new Group(line);
+                PreviousSection.Groups.Add(PreviousGroup.Name, PreviousGroup);
             }
 
             return;
