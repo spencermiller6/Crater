@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Diagnostics;
 
 namespace To_Do_List_App
 {
     public class List
     {
         public string? Name;
-        public Dictionary<string, string> ListProperties;
-        public List<string> ItemProperties;
+        public Dictionary<string, Property> ListProperties;
+        public List<Property> ItemProperties;
         public Dictionary<string, Section> Sections;
 
         public List()
         {
-            ListProperties = new Dictionary<string, string>();
-            ItemProperties = new List<string>();
+            ListProperties = new Dictionary<string, Property>();
+            ItemProperties = new List<Property>();
             Sections = new Dictionary<string, Section>();
         }
     }
@@ -72,19 +73,36 @@ namespace To_Do_List_App
         }
     }
 
+    public delegate bool ValueCheck(string value);
+
     public class Property
     {
         public string Name;
         public List<string> Values;
+        public ValueCheck MeetsConstraints;
 
         public Property(string name)
         {
             Name = name;
             Values = new List<string> { };
+            MeetsConstraints += (_) => true;
+        }
+
+        public Property(string name, ValueCheck valueCheck)
+        {
+            Name = name;
+            Values = new List<string> { };
+            MeetsConstraints += valueCheck;
         }
 
         public void AddValue(string value)
         {
+            if (!MeetsConstraints(value))
+            {
+                Debug.WriteLine($"{value} is not a valid value for property {Name}.");
+                return;
+            }
+
             if (Values is null)
             {
                 Values = new List<string>();

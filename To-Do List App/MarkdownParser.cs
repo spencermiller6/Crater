@@ -7,22 +7,54 @@ using System.Text;
 using System.Threading.Tasks;
 using static To_Do_List_App.List;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace To_Do_List_App
 {
     public class ListParser
     {
         private List _list;
-        private Section _currentSection;
+        private Section? _currentSection;
         private Group? _currentGroup;
         private Item? _currentItem;
         private Property? _currentProperty;
-        private int _currentOrdinalPosition;
+        private int? _currentOrdinalPosition;
+
+        private Section CurrentSection
+        {
+            get { return _currentSection; }
+            set
+            {
+                _currentSection = value;
+                CurrentGroup = null;
+            }
+        }
+
+        private Group? CurrentGroup
+        {
+            get { return _currentGroup; }
+            set
+            {
+                _currentGroup = value;
+                CurrentItem = null;
+            }
+        }
+
+        private Item? CurrentItem
+        {
+            get { return _currentItem; }
+            set
+            {
+                _currentItem = value;
+                _currentProperty = null;
+                _currentOrdinalPosition = null;
+            }
+        }
 
         public ListParser()
         {
             _list = new List();
-            _currentSection = new Section("Incomplete");
+            _currentSection = null;
             _currentGroup = null;
             _currentItem = null;
             _currentProperty = null;
@@ -33,6 +65,8 @@ namespace To_Do_List_App
         {
             StreamReader reader = new StreamReader(filepath);
             string? line;
+
+            SetDefaultListProperties();
 
             try
             {
@@ -52,6 +86,22 @@ namespace To_Do_List_App
             return _list;
         }
 
+        private void SetDefaultListProperties()
+        {
+            foreach (var propertyDefinition in ListTemplate.ListProperties)
+            {
+                Property property = new Property(propertyDefinition.Key, x => propertyDefinition.Value.Contains(x));
+                _list.ListProperties.Add(property.Name, property);
+            }
+
+            Property itemProperties = new Property("Item");
+
+            itemProperties.AddValue("Notes");
+            itemProperties.AddValue("Date");
+
+            _list.ListProperties.Add(itemProperties.Name, itemProperties);
+        }
+
         public void ParseLine2(string line)
         {
             if (line.Length < 2)
@@ -62,17 +112,17 @@ namespace To_Do_List_App
 
             int ordinalPosition = OrdinalPosition(line);
             string content = line.TrimStart();
+            string value;
 
             if (content.Substring(0, 2) == "- ")
             {
                 if (content.Length < 6)
                 {
-                    ParseProperty2(content, ordinalPosition);
+                    value = content.Substring(2);
+                    ParseProperty2(value, ordinalPosition);
                 }
                 else
                 {
-                    string value;
-
                     switch (content.Substring(2, 4))
                     {
                         case "[x] " or "[X] ":
@@ -86,18 +136,21 @@ namespace To_Do_List_App
 
                             break;
                         default:
-                            ParseProperty2(content, ordinalPosition);
+                            value = content.Substring(2);
+                            ParseProperty2(value, ordinalPosition);
                             break;
                     }
                 }
             }
             else if (content.Substring(0, 2) == "# ")
             {
-                ParseSection2(content);
+                value = content.Substring(2);
+                ParseSection2(value);
             }
             else if (content.Length >= 3 && content.Substring(0, 3) == "## ")
             {
-                ParseGroup2(content);
+                value = content.Substring(3);
+                ParseGroup2(value);
             }
             else
             {
@@ -112,42 +165,58 @@ namespace To_Do_List_App
 
             Item item = new Item(line, isComplete);
 
+            if (CurrentSection is null)
+            {
+                Section section = new Section("Incomplete");
+                _list.Sections.Add(section.Name, section);
+                CurrentSection = section;
+            }
+
+            if (CurrentGroup is null)
+            {
+                if (CurrentSection.Groups.ContainsKey("General"))
+                {
+                    CurrentGroup = CurrentSection.Groups["General"];
+                }
+                else
+                {
+                    Group group = new Group("General");
+                    CurrentSection.Groups.Add(group.Name, group);
+                    CurrentGroup = group;
+                }
+            }
+
             while (_currentOrdinalPosition > ordinalPosition)
             {
-                _currentItem = _currentItem?.Parent;
+                CurrentItem = CurrentItem?.Parent;
                 _currentOrdinalPosition--;
             }
 
-            if (_currentItem is not null && ordinalPosition > _currentOrdinalPosition)
+            if (CurrentItem is not null && ordinalPosition > _currentOrdinalPosition)
             {
-                item.Parent = _currentItem;
-                _currentItem.AddChild(item);
-            }
-            else if (_currentGroup is not null)
-            {
-                _currentGroup.Items.Add(item);
+                item.Parent = CurrentItem;
+                CurrentItem.AddChild(item);
             }
             else
             {
-                Group group = new Group("General");
-                group.Items.Add(item);
-
-                _currentSection.Groups.Add(group.Name, group);
-                _currentGroup = group;
+                CurrentGroup.Items.Add(item);
             }
 
-            _currentItem = item;
+            CurrentItem = item;
             _currentOrdinalPosition = ordinalPosition;
+
+            return;
         }
 
         public void ParseProperty2(string line, int ordinalPosition)
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
 
-            int index = line.IndexOf(':');
+            bool settingListProperties = _currentSection is null ? true : false;
+            int separaterIndex = line.IndexOf(':');
 
             // If line represents merely a property value
-            if (index == -1)
+            if (separaterIndex == -1)
             {
                 if (_currentProperty is null || _currentOrdinalPosition >= ordinalPosition)
                 {
@@ -161,24 +230,32 @@ namespace To_Do_List_App
             // If line represents a property declaration, with or without a value
             else
             {
-                string name = line.Substring(0, index);
-                string value = line.Substring(index + 1).TrimStart();
+                string name = line.Substring(0, separaterIndex);
+                string value = line.Substring(separaterIndex + 1).TrimStart();
 
-                if (!_list.ItemProperties.Contains(name))
+                if (settingListProperties)
+                {
+                    if (!_list.ListProperties.ContainsKey(name))
+                    {
+
+                    }
+                }
+
+                if (!_list.ItemProperties.Exists(x => x.Name == name))
                 {
                     Debug.WriteLine($"{name} is not a defined property.");
                     return;
                 }
 
-                if (_currentItem is null)
+                if (CurrentItem is null)
                 {
                     Debug.WriteLine($"Can't add a property if no item has been defined.");
                     return;
                 }
 
-                if (_currentItem.Properties.ContainsKey(name))
+                if (CurrentItem.Properties.ContainsKey(name))
                 {
-                    _currentProperty = _currentItem.Properties[name];
+                    _currentProperty = CurrentItem.Properties[name];
                 }
                 else
                 {
@@ -191,167 +268,51 @@ namespace To_Do_List_App
                     _currentProperty.AddValue(value);
                 }
             }
+
+            return;
         }
 
         public void ParseSection2(string line)
         {
-
             Debug.WriteLine($"Section: {line}");
+
+            if (_list.Name is null)
+            {
+                _list.Name = line;
+            }
+            else if (_list.Sections.ContainsKey(line))
+            {
+                CurrentSection = _list.Sections[line];
+            }
+            else if (ListTemplate.Sections.Contains(line))
+            {
+                Section section = new Section(line);
+                CurrentSection = section;
+            }
+            else
+            {
+                Debug.WriteLine($"{line} is not a recognized section name;");
+                return;
+            }
+
+            return;
         }
 
         public void ParseGroup2(string line)
         {
             Debug.WriteLine($"Group: {line}");
-        }
 
-        public void ParseLine(string line)
-        {
-            LineIdentifier identifier = GetIdentifier(line.TrimStart());
-
-            if (identifier == LineIdentifier.None) return;
-
-            List<string> substrings = SplitLine(line, identifier);
-            int ordinalPosition;
-            string propertyName;
-            string value;
-
-            switch (identifier)
+            if (_currentSection.Groups.ContainsKey(line))
             {
-                case LineIdentifier.CompleteItem:
-                    _currentProperty = null;
-                    ordinalPosition = OrdinalPosition(substrings[0]);
-                    value = substrings[1];
-
-                    ParseItem(value, true, ordinalPosition);
-                    break;
-                case LineIdentifier.IncompleteItem:
-                    _currentProperty = null;
-                    ordinalPosition = OrdinalPosition(substrings[0]);
-                    value = substrings[1];
-
-                    ParseItem(value, false, ordinalPosition);
-                    break;
-                case LineIdentifier.Property:
-                    ordinalPosition = OrdinalPosition(substrings[0]);
-                    propertyName = substrings[1];
-                    value = substrings[2];
-
-                    //ParseProperty(ordinalPosition, propertyName, value);
-                    break;
-                case LineIdentifier.SectionHeader:
-                    _currentItem = null;
-                    _currentProperty = null;
-                    value = substrings[0];
-                    //ParseSectionHeader(value);
-
-                    break;
-                case LineIdentifier.ListHeader:
-                    _currentGroup = null;
-                    _currentItem = null;
-                    _currentProperty = null;
-                    value = substrings[0];
-                    //ParseListHeader(value);
-
-                    break;
+                _currentGroup = _currentSection.Groups[line];
             }
-        }
-
-        private LineIdentifier GetIdentifier(string line)
-        {
-            try
+            else
             {
-                switch (line.Substring(0, 2))
-                {
-                    case "- ":
-                        switch (line.Substring(2, 4))
-                        {
-                            case "[x] ":
-                                return LineIdentifier.CompleteItem;
-                            case "[X] ":
-                                return LineIdentifier.CompleteItem;
-                            case "[ ] ":
-                                return LineIdentifier.IncompleteItem;
-                            default:
-                                return LineIdentifier.Property;
-                        }
-                    case "##":
-                        if (line[2] != ' ') goto default;
-                        return LineIdentifier.SectionHeader;
-                    case "# ":
-                        return LineIdentifier.ListHeader;
-                    default:
-                        return LineIdentifier.None;
-                }
-            }
-            catch
-            {
-                return LineIdentifier.None;
-            }
-        }
-
-        /// <summary>
-        /// Splits a line of markdown into its relevant tokens
-        /// </summary>
-        /// <param name="line">A line of markdown to be split</param>.
-        /// <param name="identifier">The identifier representing the type of parsed element that's being split</param>
-        /// <returns>A list of strings containing the various tokens, with its composition depending on the identifier:</returns>
-        private List<string> SplitLine(string line, LineIdentifier identifier)
-        {
-            List<string> substrings = new List<string>();
-            int index;
-
-            switch (identifier)
-            {
-                case LineIdentifier.CompleteItem:
-                    index = line.IndexOf('-');
-
-                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
-                    substrings.Add(line.Substring(index + 6)); // Substring 1: Item name
-
-                    break;
-                case LineIdentifier.IncompleteItem:
-                    index = line.IndexOf('-');
-
-                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
-                    substrings.Add(line.Substring(index + 6)); // Substing 1: Item name
-
-                    break;
-                case LineIdentifier.Property:
-                    index = line.IndexOf('-');
-                    substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
-
-                    int index2 = line.IndexOf(':');
-
-                    // If line represents merely a property value
-                    if (index2 == -1)
-                    {
-                        substrings.Add(_currentProperty); //Substing 1: Property name
-                        substrings.Add(line.Substring(index + 2)); // Substing 2: Property value
-                    }
-
-                    // If line represents a property declaration, with or without a value
-                    else
-                    {
-                        substrings.Add(line.Substring(index + 2, index2 - index - 2)); // Substing 1: Property name
-
-                        string substring = line.Substring(index2 + 1);
-                        substrings.Add(substring.TrimStart()); // Substing 2: Property value
-                    }
-
-                    break;
-                case LineIdentifier.SectionHeader:
-                    index = line.IndexOf('#');
-                    substrings.Add(line.Substring(index + 3)); // Substing 0: Section name
-
-                    break;
-                case LineIdentifier.ListHeader:
-                    index = line.IndexOf('#');
-                    substrings.Add(line.Substring(index + 2)); // Substing 0: Indentation
-
-                    break;
+                Group group = new Group(line);
+                _currentGroup = group;
             }
 
-            return substrings;
+            return;
         }
 
         private int OrdinalPosition(string line)
@@ -371,47 +332,197 @@ namespace To_Do_List_App
             return tabCount;
         }
 
-        private void ParseItem(string value, bool isCompleted, int ordinalPosition)
-        {
-            Item item = new Item(value, isCompleted);
+        //public void ParseLine(string line)
+        //{
+        //    LineIdentifier identifier = GetIdentifier(line.TrimStart());
 
-            while (ordinalPosition <= _currentOrdinalPosition && _currentOrdinalPosition > 0)
-            {
-                _currentItem = _currentItem.Parent;
-                _currentOrdinalPosition--;
-            }
+        //    if (identifier == LineIdentifier.None) return;
 
-            // If the item's ordinal position is 0, add the new item directly to the current section
-            if (ordinalPosition == 0)
-            {
-                // If there is no defined section, create a general one. The name general is quasi-reserved and can be user-defined,
-                // however unsorted items will also be added to this section. If there are no other sections defined, its title will
-                // not be shown as there is no need to descern between non-existant sections.
-                if (_currentGroup is null)
-                {
-                    Group section = new Group("General");
+        //    List<string> substrings = SplitLine(line, identifier);
+        //    int ordinalPosition;
+        //    string propertyName;
+        //    string value;
 
-                    _list.Groups.Add(section);
-                    _currentGroup = section;
-                }
+        //    switch (identifier)
+        //    {
+        //        case LineIdentifier.CompleteItem:
+        //            _currentProperty = null;
+        //            ordinalPosition = OrdinalPosition(substrings[0]);
+        //            value = substrings[1];
 
-                _currentGroup.Items.Add(item);
-            }
-            // Otherwise, add the new item as a child of the current one
-            else
-            {
-                if (_currentItem is null)
-                {
-                    throw new Exception("Can't add item to missing parent.");
-                }
+        //            ParseItem(value, true, ordinalPosition);
+        //            break;
+        //        case LineIdentifier.IncompleteItem:
+        //            _currentProperty = null;
+        //            ordinalPosition = OrdinalPosition(substrings[0]);
+        //            value = substrings[1];
 
-                item.Parent = _currentItem;
-                _currentItem.Children.Add(item);
-            }
+        //            ParseItem(value, false, ordinalPosition);
+        //            break;
+        //        case LineIdentifier.Property:
+        //            ordinalPosition = OrdinalPosition(substrings[0]);
+        //            propertyName = substrings[1];
+        //            value = substrings[2];
 
-            _currentItem = item;
-            _currentOrdinalPosition = ordinalPosition;
-        }
+        //            //ParseProperty(ordinalPosition, propertyName, value);
+        //            break;
+        //        case LineIdentifier.SectionHeader:
+        //            _currentItem = null;
+        //            _currentProperty = null;
+        //            value = substrings[0];
+        //            //ParseSectionHeader(value);
+
+        //            break;
+        //        case LineIdentifier.ListHeader:
+        //            _currentGroup = null;
+        //            _currentItem = null;
+        //            _currentProperty = null;
+        //            value = substrings[0];
+        //            //ParseListHeader(value);
+
+        //            break;
+        //    }
+        //}
+
+        //private LineIdentifier GetIdentifier(string line)
+        //{
+        //    try
+        //    {
+        //        switch (line.Substring(0, 2))
+        //        {
+        //            case "- ":
+        //                switch (line.Substring(2, 4))
+        //                {
+        //                    case "[x] ":
+        //                        return LineIdentifier.CompleteItem;
+        //                    case "[X] ":
+        //                        return LineIdentifier.CompleteItem;
+        //                    case "[ ] ":
+        //                        return LineIdentifier.IncompleteItem;
+        //                    default:
+        //                        return LineIdentifier.Property;
+        //                }
+        //            case "##":
+        //                if (line[2] != ' ') goto default;
+        //                return LineIdentifier.SectionHeader;
+        //            case "# ":
+        //                return LineIdentifier.ListHeader;
+        //            default:
+        //                return LineIdentifier.None;
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        return LineIdentifier.None;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Splits a line of markdown into its relevant tokens
+        ///// </summary>
+        ///// <param name="line">A line of markdown to be split</param>.
+        ///// <param name="identifier">The identifier representing the type of parsed element that's being split</param>
+        ///// <returns>A list of strings containing the various tokens, with its composition depending on the identifier:</returns>
+        //private List<string> SplitLine(string line, LineIdentifier identifier)
+        //{
+        //    List<string> substrings = new List<string>();
+        //    int index;
+
+        //    switch (identifier)
+        //    {
+        //        case LineIdentifier.CompleteItem:
+        //            index = line.IndexOf('-');
+
+        //            substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
+        //            substrings.Add(line.Substring(index + 6)); // Substring 1: Item name
+
+        //            break;
+        //        case LineIdentifier.IncompleteItem:
+        //            index = line.IndexOf('-');
+
+        //            substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
+        //            substrings.Add(line.Substring(index + 6)); // Substing 1: Item name
+
+        //            break;
+        //        case LineIdentifier.Property:
+        //            index = line.IndexOf('-');
+        //            substrings.Add(line.Substring(0, index)); // Substing 0: Indentation
+
+        //            int index2 = line.IndexOf(':');
+
+        //            // If line represents merely a property value
+        //            if (index2 == -1)
+        //            {
+        //                substrings.Add(_currentProperty); //Substing 1: Property name
+        //                substrings.Add(line.Substring(index + 2)); // Substing 2: Property value
+        //            }
+
+        //            // If line represents a property declaration, with or without a value
+        //            else
+        //            {
+        //                substrings.Add(line.Substring(index + 2, index2 - index - 2)); // Substing 1: Property name
+
+        //                string substring = line.Substring(index2 + 1);
+        //                substrings.Add(substring.TrimStart()); // Substing 2: Property value
+        //            }
+
+        //            break;
+        //        case LineIdentifier.SectionHeader:
+        //            index = line.IndexOf('#');
+        //            substrings.Add(line.Substring(index + 3)); // Substing 0: Section name
+
+        //            break;
+        //        case LineIdentifier.ListHeader:
+        //            index = line.IndexOf('#');
+        //            substrings.Add(line.Substring(index + 2)); // Substing 0: Indentation
+
+        //            break;
+        //    }
+
+        //    return substrings;
+        //}
+
+        //private void ParseItem(string value, bool isCompleted, int ordinalPosition)
+        //{
+        //    Item item = new Item(value, isCompleted);
+
+        //    while (ordinalPosition <= _currentOrdinalPosition && _currentOrdinalPosition > 0)
+        //    {
+        //        _currentItem = _currentItem.Parent;
+        //        _currentOrdinalPosition--;
+        //    }
+
+        //    // If the item's ordinal position is 0, add the new item directly to the current section
+        //    if (ordinalPosition == 0)
+        //    {
+        //        // If there is no defined section, create a general one. The name general is quasi-reserved and can be user-defined,
+        //        // however unsorted items will also be added to this section. If there are no other sections defined, its title will
+        //        // not be shown as there is no need to descern between non-existant sections.
+        //        if (_currentGroup is null)
+        //        {
+        //            Group section = new Group("General");
+
+        //            _list.Groups.Add(section);
+        //            _currentGroup = section;
+        //        }
+
+        //        _currentGroup.Items.Add(item);
+        //    }
+        //    // Otherwise, add the new item as a child of the current one
+        //    else
+        //    {
+        //        if (_currentItem is null)
+        //        {
+        //            throw new Exception("Can't add item to missing parent.");
+        //        }
+
+        //        item.Parent = _currentItem;
+        //        _currentItem.Children.Add(item);
+        //    }
+
+        //    _currentItem = item;
+        //    _currentOrdinalPosition = ordinalPosition;
+        //}
 
         //private void ParseProperty(int ordinalPosition, string propertyName, string value)
         //{
@@ -427,13 +538,13 @@ namespace To_Do_List_App
         //                throw new Exception("Can't assign property value inline with the declaration of item properties.");
         //            }
         //        }
-                
+
         //        if (_currentProperty == "Item")
         //        {
         //            // set item property
         //            return;
         //        }
-                
+
         //        if (ToDoList.MasterPropertyList.ContainsKey(propertyName))
         //        {
         //            if (ToDoList.MasterPropertyList[propertyName].Contains(value))
@@ -600,5 +711,33 @@ namespace To_Do_List_App
         //            throw new Exception($"Unrecognized data type: {input}");
         //    }
         //}
+    }
+
+    public static class ListTemplate
+    {
+        public static readonly Dictionary<string, List<string>> ListProperties;
+        public static readonly List<string> Sections;
+
+        static ListTemplate()
+        {
+            ListProperties = new Dictionary<string, List<string>>()
+            {
+                { "Type", new List<string>() { "Standard", "Template" } },
+                { "Completion", new List<string>() { "Immediate", "Long-Term", "Disabled" } },
+                { "Completed Items", new List<string>() { "Enabled", "Disabled" } },
+                { "Children", new List<string>() { "Enabled", "Disabled" } },
+                { "Notes", new List<string>() { "Enabled", "Disabled" } },
+                { "Date", new List<string>() { "Enabled", "Disabled" } },
+                { "Priority", new List<string>() { "Enabled", "Disabled" } }
+            };
+
+            Sections = new List<string>()
+            {
+                "Incomplete",
+                "Complete",
+                "Recurring",
+                "Template"
+            };
+        }
     }
 }
