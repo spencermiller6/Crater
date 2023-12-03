@@ -9,7 +9,7 @@ namespace Crater
 {
     public class ListParser
     {
-        private List _list;
+        private CraterList _list;
         private Section? _previousSection;
         private Group? _previousGroup;
         private Item? _previousItem;
@@ -48,7 +48,7 @@ namespace Crater
 
         public ListParser()
         {
-            _list = new List();
+            _list = new CraterList();
             _previousSection = null;
             _previousGroup = null;
             _previousItem = null;
@@ -56,7 +56,7 @@ namespace Crater
             _previousOrdinalPosition = 0;
         }
 
-        public List CreateFromFilepath(string filepath)
+        public CraterList CreateFromFilepath(string filepath)
         {
             StreamReader reader = new StreamReader(filepath);
             string? line;
