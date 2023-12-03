@@ -17,7 +17,7 @@ using Markdig;
 using Markdig.Parsers;
 using Markdig.Syntax;
 
-namespace To_Do_List_App
+namespace Crater
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

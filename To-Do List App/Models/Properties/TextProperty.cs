@@ -1,4 +1,4 @@
-﻿namespace To_Do_List_App.List.Properties
+﻿namespace Crater.Models.Properties
 {
     public class TextProperty : Property
     {

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System;
 
-namespace To_Do_List_App.List
+namespace Crater.Models
 {
     public class List
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace To_Do_List_App.List
+namespace Crater.Models
 {
     public abstract class Property
     {

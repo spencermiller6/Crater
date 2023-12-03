@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace To_Do_List_App.List
+namespace Crater.Models
 {
     public class Group
     {
