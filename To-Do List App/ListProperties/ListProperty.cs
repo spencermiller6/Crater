@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace To_Do_List_App.Properties.ListProperties
+namespace To_Do_List_App.ListProperties
 {
     public abstract class ListProperty
     {

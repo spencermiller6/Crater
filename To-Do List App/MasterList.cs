@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using To_Do_List_App.Properties.ListProperties;
+using To_Do_List_App.ListProperties;
 
 namespace To_Do_List_App
 {
