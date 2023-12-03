@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace To_Do_List_App
 {
-    public abstract class ItemProperty
+    public abstract class Property
     {
         public List<string> Values { get; protected set; }
 
-        public ItemProperty()
+        public Property()
         {
             Values = new List<string>();
         }
@@ -43,14 +43,14 @@ namespace To_Do_List_App
         }
     }
 
-    public class TextProperty : ItemProperty
+    public class TextProperty : Property
     {
         public override string Identifier => "Text";
 
         public override bool IsValidValue(string value) => true;
     }
 
-    public class NumberProperty : ItemProperty
+    public class NumberProperty : Property
     {
         public override string Identifier => "Number";
 
