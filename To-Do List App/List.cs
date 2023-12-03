@@ -7,12 +7,12 @@ namespace To_Do_List_App
     public class List
     {
         public string? Name;
-        public Dictionary<string, Property> ListProperties;
+        public Dictionary<string, ItemProperty> Properties;
         public Dictionary<string, Section> Sections;
 
         public List()
         {
-            ListProperties = new Dictionary<string, Property>();
+            Properties = new Dictionary<string, ItemProperty>();
             Sections = new Dictionary<string, Section>();
         }
     }
@@ -47,7 +47,7 @@ namespace To_Do_List_App
         public bool IsComplete;
         public bool IsStarred;
         public DateTime Date;
-        public Dictionary<string, Property> Properties;
+        public Dictionary<string, ItemProperty> Properties;
         public Item? Parent;
         public List<Item>? Children;
 
@@ -56,7 +56,7 @@ namespace To_Do_List_App
             Name = name;
             IsComplete = isComplete;
             IsStarred = false;
-            Properties = new Dictionary<string, Property>();
+            Properties = new Dictionary<string, ItemProperty>();
             Children = new List<Item> { };
         }
 
@@ -72,41 +72,4 @@ namespace To_Do_List_App
     }
 
     public delegate bool ValueCheck(string value);
-
-    public class Property
-    {
-        public string Name;
-        public List<string> Values;
-        public ValueCheck MeetsConstraints;
-
-        public Property(string name)
-        {
-            Name = name;
-            Values = new List<string> { };
-            MeetsConstraints += (_) => true;
-        }
-
-        public Property(string name, ValueCheck valueCheck)
-        {
-            Name = name;
-            Values = new List<string> { };
-            MeetsConstraints += valueCheck;
-        }
-
-        public void AddValue(string value)
-        {
-            if (!MeetsConstraints(value))
-            {
-                Debug.WriteLine($"{value} is not a valid value for property {Name}.");
-                return;
-            }
-
-            if (Values is null)
-            {
-                Values = new List<string>();
-            }
-
-            Values.Add(value);
-        }
-    }
 }
