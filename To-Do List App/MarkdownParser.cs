@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
-using To_Do_List_App.List;
 using Crater.Models;
 
 namespace Crater
@@ -62,8 +61,6 @@ namespace Crater
             StreamReader reader = new StreamReader(filepath);
             string? line;
 
-            SetDefaultListProperties();
-
             try
             {
                 line = reader.ReadLine();
@@ -80,24 +77,6 @@ namespace Crater
             }
 
             return _list;
-        }
-
-        private void SetDefaultListProperties()
-        {
-            foreach (var propertyDefinition in ListTemplate.ListProperties)
-            {
-
-                Property property = new Property(propertyDefinition.Key, x => propertyDefinition.Value.Contains(x));
-                property.AddValue(propertyDefinition.Value.FirstOrDefault());
-                _list.ListProperties.Add(property.Name, property);
-            }
-
-            Property itemProperties = new Property("Item");
-
-            itemProperties.AddValue("Notes");
-            itemProperties.AddValue("Date");
-
-            _list.ListProperties.Add(itemProperties.Name, itemProperties);
         }
 
         public void ParseLine(string line)
@@ -210,7 +189,6 @@ namespace Crater
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
 
-            bool settingListProperties = _previousSection is null ? true : false;
             int separaterIndex = line.IndexOf(':');
 
             // If line represents merely a property value
@@ -231,41 +209,27 @@ namespace Crater
                 string name = line.Substring(0, separaterIndex);
                 string value = line.Substring(separaterIndex + 1).TrimStart();
 
-                if (settingListProperties)
+                if (!_list.Properties.ContainsKey(name))
                 {
-                    if (!_list.ListProperties.ContainsKey(name))
-                    {
-                        Debug.WriteLine($"{name} is not a valid property.");
-                        return;
-                    }
+                    Debug.WriteLine($"{name} is not a defined property.");
+                    return;
+                }
 
-                    _previousProperty = _list.ListProperties[name];
+                if (PreviousItem is null)
+                {
+                    Debug.WriteLine($"Can't add a property if no item has been defined.");
+                    return;
+                }
+
+                if (PreviousItem.Properties.ContainsKey(name))
+                {
+                    _previousProperty = PreviousItem.Properties[name];
                 }
                 else
                 {
-                    // I definitely need to bring back the items property list as its own separate object
-                    if (!_list.ListProperties["Item"].Values.Contains(name))
-                    {
-                        Debug.WriteLine($"{name} is not a defined property.");
-                        return;
-                    }
-
-                    if (PreviousItem is null)
-                    {
-                        Debug.WriteLine($"Can't add a property if no item has been defined.");
-                        return;
-                    }
-
-                    if (PreviousItem.Properties.ContainsKey(name))
-                    {
-                        _previousProperty = PreviousItem.Properties[name];
-                    }
-                    else
-                    {
-                        Property property = new Property(name);
-                        PreviousItem.Properties.Add(property.Name, property);
-                        _previousProperty = property;
-                    }
+                    Property property = new Property(name);
+                    PreviousItem.Properties.Add(property.Name, property);
+                    _previousProperty = property;
                 }
 
                 if (!String.IsNullOrEmpty(value))
