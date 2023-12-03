@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace To_Do_List_App
+namespace To_Do_List_App.List
 {
     public abstract class Property
     {
@@ -41,19 +41,5 @@ namespace To_Do_List_App
 
             Values.Add(value);
         }
-    }
-
-    public class TextProperty : Property
-    {
-        public override string Identifier => "Text";
-
-        public override bool IsValidValue(string value) => true;
-    }
-
-    public class NumberProperty : Property
-    {
-        public override string Identifier => "Number";
-
-        public override bool IsValidValue(string value) => double.TryParse(value, out _);
     }
 }
