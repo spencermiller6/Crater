@@ -11,7 +11,7 @@ namespace Crater.Models
         public DateTime Date;
         public Dictionary<string, Property> Properties;
         public Item? Parent;
-        public List<Item>? Children;
+        public List<Item> Children;
 
         public Item(string name, bool isComplete)
         {
@@ -20,16 +20,6 @@ namespace Crater.Models
             IsStarred = false;
             Properties = new Dictionary<string, Property>();
             Children = new List<Item> { };
-        }
-
-        public void AddChild(Item item)
-        {
-            if (Children is null)
-            {
-                Children = new List<Item>();
-            }
-
-            Children.Add(item);
         }
     }
 }

@@ -193,7 +193,7 @@ namespace Crater
             if (PreviousItem is not null && ordinalPosition > _previousOrdinalPosition)
             {
                 item.Parent = PreviousItem;
-                PreviousItem.AddChild(item);
+                PreviousItem.Children.Add(item);
             }
             else
             {
