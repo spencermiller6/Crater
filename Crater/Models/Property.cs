@@ -6,15 +6,18 @@ namespace Crater.Models
 {
     public abstract class Property
     {
-        public Property()
+        public Property(string name)
         {
+            Name = name;
             Values = new List<string>();
         }
 
         public abstract string Identifier { get; }
+        public string Name { get; set; }
         public List<string> Values { get; protected set; }
 
         public abstract bool IsValidValue(string value);
+        public abstract Property Clone();
 
         public void SetValue(string value, int index)
         {

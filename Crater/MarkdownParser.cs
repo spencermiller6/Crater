@@ -140,7 +140,7 @@ namespace Crater
         {
             Debug.WriteLine($"{ordinalPosition} Item ({isComplete}): {line}");
 
-            Item item = new Item(line, isComplete);
+            Item item = new Item(line, isComplete, _list.Properties);
 
             if (PreviousSection is null)
             {
@@ -221,16 +221,7 @@ namespace Crater
                     return;
                 }
 
-                if (PreviousItem.Properties.ContainsKey(name))
-                {
-                    _previousProperty = PreviousItem.Properties[name];
-                }
-                else
-                {
-                    Property property = new Property(name);
-                    PreviousItem.Properties.Add(property.Name, property);
-                    _previousProperty = property;
-                }
+                _previousProperty = PreviousItem.Properties[name];
 
                 if (!String.IsNullOrEmpty(value))
                 {

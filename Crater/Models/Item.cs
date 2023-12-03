@@ -13,13 +13,18 @@ namespace Crater.Models
         public Item? Parent;
         public List<Item> Children;
 
-        public Item(string name, bool isComplete)
+        public Item(string name, bool isComplete, Dictionary<string, Property> properties)
         {
             Name = name;
             IsComplete = isComplete;
             IsStarred = false;
             Properties = new Dictionary<string, Property>();
             Children = new List<Item> { };
+
+            foreach (var property in properties)
+            {
+                Properties.Add(property.Key, property.Value.Clone());
+            }
         }
     }
 }
