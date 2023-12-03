@@ -1,17 +1,10 @@
 # List Name
 
-- Type: Standard (default), Template
-- Completion: Immediate (default), Long-Term, Disabled
-- Completed Items: Enabled (default), Disabled
-- Children: Enabled (default), Disabled
-- Notes: Enabled (default), Disabled
-- Date: Enabled (default), Disabled
-- Item:
-	- Property 1 Name
-	- Property 2 Name
-	- Property 3 Name
+- Property 1 Name
+- Property 2 Name
+- Property 3 Name
 
-# Incomplete (this line is necessary as it is an inferred section)
+# Incomplete (this line is unnecessary as it is an inferred section)
 
 ## Group 1
 
