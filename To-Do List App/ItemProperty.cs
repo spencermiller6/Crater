@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace To_Do_List_App.ItemProperties
+namespace To_Do_List_App
 {
     public abstract class ItemProperty
     {

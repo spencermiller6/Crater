@@ -12,8 +12,4 @@
     <PackageReference Include="Markdig" Version="0.33.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ListProperties\" />
-  </ItemGroup>
-
 </Project>
