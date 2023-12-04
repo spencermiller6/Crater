@@ -4,6 +4,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using Crater.Models;
+using Crater.Models.Properties;
 
 namespace Crater
 {
@@ -189,6 +190,15 @@ namespace Crater
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
 
+            if (_previousSection is null)
+            {
+                ParseGlobalProperty(line, ordinalPosition);
+            }
+            else
+            {
+                ParseLocalProperty(line, ordinalPosition);
+            }
+
             int separaterIndex = line.IndexOf(':');
 
             // If line represents merely a property value
@@ -227,6 +237,46 @@ namespace Crater
                 {
                     _previousProperty.AddValue(value);
                 }
+            }
+
+            return;
+        }
+
+        public void ParseGlobalProperty(string line, int ordinalPosition)
+        {
+            int separaterIndex = line.IndexOf(':');
+
+            // If line represents merely a property value
+            if (separaterIndex == -1)
+            {
+                Debug.WriteLine($"Multi-line global property definitions are not supported.");
+                return;
+            }
+            
+            string name = line.Substring(0, separaterIndex);
+            string identifier = line.Substring(separaterIndex + 1).TrimStart();
+
+            if (_list.Properties.ContainsKey(name))
+            {
+                Debug.WriteLine($"There alread exists a property named \"{name}\".");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(identifier))
+            {
+                Debug.WriteLine($"Can't create property \"{name}\" because it is missing an identifier.");
+                return;
+            }
+
+            switch (identifier)
+            {
+                case "Text" or "text":
+                    TextProperty property = new TextProperty(name);
+                    _list.Properties.Add(property.Name, property);
+                    break;
+                default:
+                    Debug.WriteLine($"\"{identifier}\" is not a recognized property identifier.");
+                    break;
             }
 
             return;
@@ -301,20 +351,16 @@ namespace Crater
 
     public static class ListTemplate
     {
-        public static readonly Dictionary<string, List<string>> ListProperties;
+        public static readonly Dictionary<string, Property> Properties;
         public static readonly List<string> Sections;
 
         static ListTemplate()
         {
-            ListProperties = new Dictionary<string, List<string>>()
+            TextProperty textProperty = new TextProperty("");
+
+            Properties = new Dictionary<string, Property>
             {
-                { "Type", new List<string>() { "Standard", "Template" } },
-                { "Completion", new List<string>() { "Immediate", "Long-Term", "Disabled" } },
-                { "Completed Items", new List<string>() { "Enabled", "Disabled" } },
-                { "Children", new List<string>() { "Enabled", "Disabled" } },
-                { "Notes", new List<string>() { "Enabled", "Disabled" } },
-                { "Date", new List<string>() { "Enabled", "Disabled" } },
-                { "Priority", new List<string>() { "Enabled", "Disabled" } }
+                { textProperty.Identifier, textProperty }
             };
 
             Sections = new List<string>()
