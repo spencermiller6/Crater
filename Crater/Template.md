@@ -1,8 +1,8 @@
 # List Name
 
-- Property 1 Name
-- Property 2 Name
-- Property 3 Name
+- Property 1 Name: text
+- Property 2 Name: text
+- Property 3 Name: text
 
 # Incomplete (this line is unnecessary as it is an inferred section)
 
