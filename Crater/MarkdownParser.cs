@@ -198,7 +198,50 @@ namespace Crater
             {
                 ParseLocalProperty(line, ordinalPosition);
             }
+        }
 
+        public void ParseGlobalProperty(string line, int ordinalPosition)
+        {
+            int separaterIndex = line.IndexOf(':');
+
+            // If line represents merely a property value
+            if (separaterIndex == -1)
+            {
+                Debug.WriteLine($"Multi-line global property definitions are not supported.");
+                return;
+            }
+            
+            string name = line.Substring(0, separaterIndex);
+            string identifier = line.Substring(separaterIndex + 1).TrimStart();
+
+            if (_list.Properties.ContainsKey(name))
+            {
+                Debug.WriteLine($"There alread exists a property named \"{name}\".");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(identifier))
+            {
+                Debug.WriteLine($"Can't create property \"{name}\" because it is missing an identifier.");
+                return;
+            }
+
+            switch (identifier)
+            {
+                case "Text" or "text":
+                    TextProperty property = new TextProperty(name);
+                    _list.Properties.Add(property.Name, property);
+                    break;
+                default:
+                    Debug.WriteLine($"\"{identifier}\" is not a recognized property identifier.");
+                    break;
+            }
+
+            return;
+        }
+
+        public void ParseLocalProperty(string line, int ordinalPosition)
+        {
             int separaterIndex = line.IndexOf(':');
 
             // If line represents merely a property value
@@ -237,46 +280,6 @@ namespace Crater
                 {
                     _previousProperty.AddValue(value);
                 }
-            }
-
-            return;
-        }
-
-        public void ParseGlobalProperty(string line, int ordinalPosition)
-        {
-            int separaterIndex = line.IndexOf(':');
-
-            // If line represents merely a property value
-            if (separaterIndex == -1)
-            {
-                Debug.WriteLine($"Multi-line global property definitions are not supported.");
-                return;
-            }
-            
-            string name = line.Substring(0, separaterIndex);
-            string identifier = line.Substring(separaterIndex + 1).TrimStart();
-
-            if (_list.Properties.ContainsKey(name))
-            {
-                Debug.WriteLine($"There alread exists a property named \"{name}\".");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(identifier))
-            {
-                Debug.WriteLine($"Can't create property \"{name}\" because it is missing an identifier.");
-                return;
-            }
-
-            switch (identifier)
-            {
-                case "Text" or "text":
-                    TextProperty property = new TextProperty(name);
-                    _list.Properties.Add(property.Name, property);
-                    break;
-                default:
-                    Debug.WriteLine($"\"{identifier}\" is not a recognized property identifier.");
-                    break;
             }
 
             return;
