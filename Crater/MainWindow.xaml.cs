@@ -9,7 +9,7 @@ namespace Crater
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string directory = "C:\\Users\\spenc\\source\\repos\\To-Do List App\\To-Do List App\\Template.md";
+        public string directory = "C:\\Users\\spenc\\source\\repos\\Crater\\Crater\\Template.md";
 
         public MainWindow()
         {
