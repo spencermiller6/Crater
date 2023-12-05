@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Crater.Models.Properties;
+using System.Collections.Generic;
 
 namespace Crater.Models
 {
@@ -12,6 +13,12 @@ namespace Crater.Models
         {
             Properties = new Dictionary<string, Property>();
             Sections = new Dictionary<string, Section>();
+
+            TextProperty notes = new TextProperty("Notes");
+            TextProperty date = new TextProperty("Date"); // This will eventually be of type DateProperty
+
+            Properties.Add(notes.Name, notes);
+            Properties.Add(date.Name, date);
         }
     }
 }
