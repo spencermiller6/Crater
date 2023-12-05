@@ -168,8 +168,6 @@ namespace Crater
         /// <param name="isComplete"></param>
         public void ParseItem(string line, int ordinalPosition, bool isComplete)
         {
-            Debug.WriteLine($"{ordinalPosition} Item ({isComplete}): {line}");
-
             Item item = new Item(line, isComplete, _list.Properties);
 
             if (PreviousSection is null)
@@ -225,8 +223,6 @@ namespace Crater
         /// <param name="ordinalPosition"></param>
         public void ParseProperty(string line, int ordinalPosition)
         {
-            Debug.WriteLine($"{ordinalPosition} Property: {line}");
-
             if (PreviousSection is null)
             {
                 ParseGlobalProperty(line, ordinalPosition);
@@ -340,8 +336,6 @@ namespace Crater
         /// </param>
         public void ParseSection(string line)
         {
-            Debug.WriteLine($"Section: {line}");
-
             if (_list.Name is null)
             {
                 _list.Name = line;
@@ -372,8 +366,6 @@ namespace Crater
         /// </param>
         public void ParseGroup(string line)
         {
-            Debug.WriteLine($"Group: {line}");
-
             if (PreviousSection is null)
             {
                 PreviousSection = new Section("Incomplete");
