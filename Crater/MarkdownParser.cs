@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
-using System.Linq;
 using Crater.Models;
 using Crater.Models.Properties;
 
@@ -17,9 +16,13 @@ namespace Crater
         private Property? _previousProperty;
         private int _previousOrdinalPosition;
 
-        private Section PreviousSection
+        /// <summary>
+        /// Accessor for <see cref="_previousSection"/> that sets dependent properties to 
+        /// null in cascading fashion.
+        /// </summary>
+        private Section? PreviousSection
         {
-            get { return _previousSection; }
+            get => _previousSection;
             set
             {
                 _previousSection = value;
@@ -27,9 +30,13 @@ namespace Crater
             }
         }
 
+        /// <summary>
+        /// Accessor for <see cref="_previousGroup"/> that sets dependent properties to 
+        /// null in cascading fashion.
+        /// </summary>
         private Group? PreviousGroup
         {
-            get { return _previousGroup; }
+            get => _previousGroup;
             set
             {
                 _previousGroup = value;
@@ -37,9 +44,13 @@ namespace Crater
             }
         }
 
+        /// <summary>
+        /// Accessor for <see cref="_previousItem"/> that sets dependent properties to 
+        /// null in cascading fashion.
+        /// </summary>
         private Item? PreviousItem
         {
-            get { return _previousItem; }
+            get => _previousItem;
             set
             {
                 _previousItem = value;
@@ -57,6 +68,11 @@ namespace Crater
             _previousOrdinalPosition = 0;
         }
 
+        /// <summary>
+        /// Creates a <see cref="CraterList"/> from a filepath to a Markdown document.
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <returns></returns>
         public CraterList CreateFromFilepath(string filepath)
         {
             StreamReader reader = new StreamReader(filepath);
@@ -80,6 +96,10 @@ namespace Crater
             return _list;
         }
 
+        /// <summary>
+        /// Parses a single line of Markdown.
+        /// </summary>
+        /// <param name="line"></param>
         public void ParseLine(string line)
         {
             if (line.Length < 2)
@@ -137,6 +157,15 @@ namespace Crater
             }
         }
 
+        /// <summary>
+        /// Parses a formatted Markdown line containing an item.
+        /// </summary>
+        /// <param name="line">
+        /// A line of Markdown containing a item that has been trimmed of all leading 
+        /// whitespace and the variation of "- [x] " used to identify it.
+        /// </param>
+        /// <param name="ordinalPosition"></param>
+        /// <param name="isComplete"></param>
         public void ParseItem(string line, int ordinalPosition, bool isComplete)
         {
             Debug.WriteLine($"{ordinalPosition} Item ({isComplete}): {line}");
@@ -186,11 +215,19 @@ namespace Crater
             return;
         }
 
+        /// <summary>
+        /// Parses a formatted Markdown line containing a property.
+        /// </summary>
+        /// <param name="line">
+        /// A line of Markdown containing a property that has been trimmed 
+        /// of all leading whitespace and the "- " used to identify it.
+        /// </param>
+        /// <param name="ordinalPosition"></param>
         public void ParseProperty(string line, int ordinalPosition)
         {
             Debug.WriteLine($"{ordinalPosition} Property: {line}");
 
-            if (_previousSection is null)
+            if (PreviousSection is null)
             {
                 ParseGlobalProperty(line, ordinalPosition);
             }
@@ -200,6 +237,11 @@ namespace Crater
             }
         }
 
+        /// <summary>
+        /// Parses a line that defines a property to be attributed to each item in the list.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="ordinalPosition"></param>
         public void ParseGlobalProperty(string line, int ordinalPosition)
         {
             int separaterIndex = line.IndexOf(':');
@@ -240,13 +282,18 @@ namespace Crater
             return;
         }
 
+        /// <summary>
+        /// Parses the value of an instance of a property for a specific item.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="ordinalPosition"></param>
         public void ParseLocalProperty(string line, int ordinalPosition)
         {
             int separaterIndex = line.IndexOf(':');
 
-            // If line represents merely a property value
             if (separaterIndex == -1)
             {
+                // Line represents merely a property value
                 if (_previousProperty is null || ordinalPosition <= _previousOrdinalPosition)
                 {
                     Debug.WriteLine($"Can't set property value if property isn't specified.");
@@ -256,9 +303,9 @@ namespace Crater
                 _previousProperty.AddValue(line);
             }
 
-            // If line represents a property declaration, with or without a value
             else
             {
+                // Line represents a property declaration, with or without a value
                 string name = line.Substring(0, separaterIndex);
                 string value = line.Substring(separaterIndex + 1).TrimStart();
 
@@ -285,6 +332,12 @@ namespace Crater
             return;
         }
 
+        /// <summary>
+        /// Parses a formatted Markdown line containing a section header.
+        /// </summary>
+        /// <param name="line">
+        /// A line of Markdown containing a section that has been trimmed of "# ".
+        /// </param>
         public void ParseSection(string line)
         {
             Debug.WriteLine($"Section: {line}");
@@ -311,6 +364,12 @@ namespace Crater
             return;
         }
 
+        /// <summary>
+        /// Parses a formatted Markdown line containing a group header.
+        /// </summary>
+        /// <param name="line">
+        /// A line of Markdown containing a section that has been trimmed of "## ".
+        /// </param>
         public void ParseGroup(string line)
         {
             Debug.WriteLine($"Group: {line}");
@@ -334,6 +393,12 @@ namespace Crater
             return;
         }
 
+        /// <summary>
+        /// Determines the degree to which a line is nested based off its leading whitespace. 
+        /// Each instance of a tab or four contiguous spaces increments this value.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         private int OrdinalPosition(string line)
         {
             int whitespaceCharacters = line.Length - line.TrimStart().Length;
@@ -352,6 +417,9 @@ namespace Crater
         }
     }
 
+    /// <summary>
+    /// Defines the properties and sections that are supported in parsing a Markdown document.
+    /// </summary>
     public static class ListTemplate
     {
         public static readonly Dictionary<string, Property> Properties;

@@ -12,11 +12,29 @@ namespace Crater.Models
             Values = new List<string>();
         }
 
+        /// <summary>
+        /// Effectively the name of all instances of a particular property class.
+        /// It is what's serialized in markdown to identify a property as being a given type.
+        /// </summary>
+        /// <remarks>
+        /// Would like to make this a static property but that is not yet supported in .NET.
+        /// </remarks>
         public abstract string Identifier { get; }
         public string Name { get; set; }
         public List<string> Values { get; protected set; }
 
+        /// <summary>
+        /// Performs the necessary value-checking logic to determine whether the given value 
+        /// is of the correct type and format that it's supposed to be.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public abstract bool IsValidValue(string value);
+
+        /// <summary>
+        /// Creates a deep clone of a property and its values.
+        /// </summary>
+        /// <returns></returns>
         public abstract Property Clone();
 
         public void SetValue(string value, int index)
