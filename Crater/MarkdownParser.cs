@@ -102,6 +102,11 @@ namespace Crater
         /// <param name="line"></param>
         public void ParseLine(string line)
         {
+            if (string.IsNullOrEmpty(line.Trim()))
+            {
+                return;
+            }
+
             if (line.Length < 2)
             {
                 Debug.WriteLine("No valid elements have a length less than two.");
